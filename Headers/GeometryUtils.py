@@ -37,7 +37,7 @@ Functions
 nX = 3  # number of columns
 xwidth = 11.28  # mm ; width of xmin pad
 xc = xwidth / 2  # mm ; horizontal center of pad
-xleft = (-(nX // 2) * xwidth)  # Most left position of the superpad considered
+xleft = -(nX // 2) * xwidth  # Most left position of the superpad considered
 xright = (nX // 2 + 1) * xwidth  # Most right position of the superpad considered
 xmin = 0  # mm ; bottom border of leading pad
 xmax = xwidth  # mm ; top border of leading pad
@@ -45,7 +45,7 @@ xmax = xwidth  # mm ; top border of leading pad
 nY = 3  # number of rows
 ywidth = 10.19  # mm ; height of xmin pad
 yc = ywidth / 2  # mm ; vertical center of pad
-ylow = (-(nY // 2) * ywidth)  # Lowest position of the superpad considered
+ylow = -(nY // 2) * ywidth  # Lowest position of the superpad considered
 yhigh = (nY // 2 + 1) * ywidth  # Highest position of the superpad considered
 ymin = 0  # mm ; left border of leading pad
 ymax = ywidth  # mm ; right border of leading pad

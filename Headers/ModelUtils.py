@@ -37,7 +37,7 @@ z = 250  # mm
 # Charge variables
 qe = 1.61e-4  # fC/e
 # Punctual deposit case
-Ne55Fe = 224 # number of electrons caused by a 55Fe decay
+Ne55Fe = 224  # number of electrons caused by a 55Fe decay
 # Track case
 Ne = 10  # e/mm
 lambdaG = qe * G * Ne  # fC/mm

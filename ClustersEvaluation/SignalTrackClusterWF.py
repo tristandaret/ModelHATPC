@@ -70,19 +70,19 @@ def update(val):
                 ylow + iY * ywidth,
                 ylow + (iY + 1) * ywidth,
                 sliders["RC"].val,
-                sliders["z"].val
+                sliders["z"].val,
             )[: len(t)]
             # Leading pad
-            if (iX, iY) == (nX//2, nY//2):
+            if (iX, iY) == (nX // 2, nY // 2):
                 buffers["centralPad"] += sig
             # Vertical cluster
             if iX == nX // 2:
                 buffers["vertClus"] += sig
             # Diagonal cluster
-            if iX + iY == nX//2 + nY//2:
+            if iX + iY == nX // 2 + nY // 2:
                 buffers["diagClus"] += sig
             # Half-cross cluster
-            if (iX >= nX//2 and iY == nY//2) or (iX == nX//2 and iY >= nY//2):
+            if (iX >= nX // 2 and iY == nY // 2) or (iX == nX // 2 and iY >= nY // 2):
                 buffers["halfClus"] += sig
 
     if Ldiag != 0:

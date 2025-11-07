@@ -80,7 +80,7 @@ def update(val):
             ylow + iY * ywidth,
             ylow + (iY + 1) * ywidth,
             sliders["RC"].val,
-            sliders["z"].val
+            sliders["z"].val,
         )
         sig = sig[: len(t)]  # Prevent shape mismatch
         buffers["clusVert"] += sig

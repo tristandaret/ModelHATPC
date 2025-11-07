@@ -177,7 +177,7 @@ st23deg = Slider(
 )
 sdcpdeg = Slider(
     ax_dcp,
-    r"$\delta_{CP}$"f"\n[deg]",
+    r"$\delta_{CP}$" f"\n[deg]",
     0,
     360,
     valinit=np.rad2deg(delta_cp_0),
@@ -185,7 +185,7 @@ sdcpdeg = Slider(
 )
 sdm12e5 = Slider(
     axdm12,
-    r"$\Delta m^2_{12}$"f"\n"r"[$10^{-5}$eV$^2$]",
+    r"$\Delta m^2_{12}$" f"\n" r"[$10^{-5}$eV$^2$]",
     5,
     10,
     valinit=dm12_0 * 1e5,
@@ -193,7 +193,7 @@ sdm12e5 = Slider(
 )
 sdm23e3 = Slider(
     axdm23,
-    r"$\Delta m^2_{23}$"f"\n"r"[$10^{-3}$eV$^2$]",
+    r"$\Delta m^2_{23}$" f"\n" r"[$10^{-3}$eV$^2$]",
     2,
     3,
     valinit=dm23_0 * 1e3,

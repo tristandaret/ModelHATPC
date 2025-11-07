@@ -252,22 +252,13 @@ ax_plot.set_position(
     [], [], label=rf"$P({ilatex[alpha]} \to \nu_\ell)$", color="red", linestyle="--"
 )
 (line_antiXe,) = ax_plot.plot(
-    [],
-    [],
-    label=rf"$P({ilatex[alpha+3]} \to {ilatex[3]})$",
-    color="orange"
+    [], [], label=rf"$P({ilatex[alpha+3]} \to {ilatex[3]})$", color="orange"
 )
 (line_antiXmu,) = ax_plot.plot(
-    [],
-    [],
-    label=rf"$P({ilatex[alpha+3]} \to {ilatex[4]})$",
-    color="blue"
+    [], [], label=rf"$P({ilatex[alpha+3]} \to {ilatex[4]})$", color="blue"
 )
 (line_antiXtau,) = ax_plot.plot(
-    [],
-    [],
-    label=rf"$P({ilatex[alpha+3]} \to {ilatex[5]})$",
-    color="green"
+    [], [], label=rf"$P({ilatex[alpha+3]} \to {ilatex[5]})$", color="green"
 )
 
 reactors_L = 1.8  # km
