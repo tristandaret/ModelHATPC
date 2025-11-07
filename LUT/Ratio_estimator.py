@@ -1,3 +1,10 @@
+"""Simple ratio estimator utilities used during LUT development.
+
+Provides a function `ratio` that computes the ratio between an estimated
+energy deposition (from geometry, `L`) and the maximal ADC amplitude from
+the model. This helper was used to validate and debug LUT entries.
+"""
+
 from sys import path
 
 path.append("Headers/")

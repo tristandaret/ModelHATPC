@@ -1,3 +1,10 @@
+"""Vertical cluster waveform explorer.
+
+Specialised visualisation that focuses on vertical neighbour contributions
+for a projected track. Note: this view was written for `nY == 5` and
+contains hard-coded index assumptions; use with care if `nY` differs.
+"""
+
 from sys import path
 
 path.append("Headers/")

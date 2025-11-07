@@ -1,3 +1,12 @@
+"""Interactive accelerator-focused oscillation probability explorer.
+
+This script visualizes neutrino (and antineutrino) oscillation probabilities
+as a function of baseline/energy (L/E). It includes interactive sliders to
+adjust mixing angles, mass-squared differences and CP phase, and overlays
+experiment markers (e.g. T2K) for reference. Intended for producing
+illustrative figures for talks and thesis material.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider

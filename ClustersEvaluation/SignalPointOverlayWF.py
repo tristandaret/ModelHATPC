@@ -1,3 +1,11 @@
+"""Overlay of point-deposit waveforms from neighbouring pads.
+
+This script computes the shaped signal for a chosen point-like deposit and
+plots the contribution from each pad in the `nX x nY` sub-map. It is useful
+to visualise how charge spreads to neighbors and to validate the summed
+response against a no-diffusion reference.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from sys import path

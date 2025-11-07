@@ -1,3 +1,11 @@
+"""Oscillation probability visualizer with checkboxes.
+
+This variant of the oscillation explorer adds checkboxes to toggle which
+flavor probabilities are visible, and provides a compact layout useful for
+interactive demonstrations or classroom use. The script includes the usual
+mixing-parameter sliders and baseline/energy controls.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider

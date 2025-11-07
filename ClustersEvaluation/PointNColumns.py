@@ -1,3 +1,14 @@
+"""Compare the waveform produced by point-like deposits summed over
+multiple columns with the analytical 1D (linear) deposit.
+
+This script computes the shaped signal for a line deposit (1D reference)
+and compares it to the sum of individual point-like (0D) deposits placed on
+different columns. The result is saved as a PDF in `Illustrations/`.
+
+Typical usage: run interactively to reproduce figures used in evaluation of
+the lineic vs punctual deposition approximations.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from sys import path

@@ -1,30 +1,52 @@
 import numpy as np
 
+"""Geometry helpers and grid definitions used by the HATPC model.
+
+This module defines the pad/grid geometry (number of pads, pad sizes and
+centers) and provides geometric helper functions used to convert track
+parameters (angle, impact) to line coordinates and to compute cluster
+lengths across a small grid.
+
+Constants
+---------
+- nX, nY : int
+    Number of columns and rows in the sub-map used for plotting.
+- xwidth, ywidth : float
+    Pad sizes (mm).
+- xc, yc : float
+    Pad center offsets (mm).
+
+Functions
+---------
+- X(phi_rad, d, y), Y(phi_rad, d, x)
+    Inverse geometry helpers returning the corresponding x (or y) location of
+    the line at a given y (or x).
+- compute_line_params(phi_deg, d)
+    Convert angle (degrees) and impact parameter d into (m, q, phi_rad)
+    parameters of the projected line y = m*x + q.
+- ClusterLengths(phi_rad, d)
+    Compute the length of the track intersecting the pad map in various
+    segmentation schemes used for cluster categorization.
+"""
+
+
 ##### GEOMETRY SETTINGS ######
 
 
 ### GEOMETRY PARAMETERS ###
-nX = 3  # number of colums
+nX = 3  # number of columns
 xwidth = 11.28  # mm ; width of xmin pad
 xc = xwidth / 2  # mm ; horizontal center of pad
-xleft = (
-    -(nX // 2) * xwidth
-)  # Most left position of the superpad considered (wrt left of LP)
-xright = (
-    nX // 2 + 1
-) * xwidth  # Most right position of the superpad considered (wrt left of LP)
+xleft = (-(nX // 2) * xwidth)  # Most left position of the superpad considered
+xright = (nX // 2 + 1) * xwidth  # Most right position of the superpad considered
 xmin = 0  # mm ; bottom border of leading pad
 xmax = xwidth  # mm ; top border of leading pad
 
 nY = 3  # number of rows
 ywidth = 10.19  # mm ; height of xmin pad
 yc = ywidth / 2  # mm ; vertical center of pad
-ylow = (
-    -(nY // 2) * ywidth
-)  # Lowest position of the superpad considered (wrt bottom of LP)
-yhigh = (
-    nY // 2 + 1
-) * ywidth  # Highest position of the superpad considered (wrt bottom of LP)
+ylow = (-(nY // 2) * ywidth)  # Lowest position of the superpad considered
+yhigh = (nY // 2 + 1) * ywidth  # Highest position of the superpad considered
 ymin = 0  # mm ; left border of leading pad
 ymax = ywidth  # mm ; right border of leading pad
 
@@ -35,6 +57,23 @@ diag = np.sqrt(xwidth**2 + ywidth**2)
 
 
 def X(phi_rad, d, y):
+    """Return x coordinate where the projected line crosses a given y.
+
+    Parameters
+    ----------
+    phi_rad : float
+        Track angle in radians.
+    d : float
+        Impact parameter (mm).
+    y : float
+        y-coordinate at which to compute x.
+
+    Returns
+    -------
+    float
+        x coordinate (mm) or -inf when the line is vertical in this
+        parameterisation.
+    """
     if phi_rad == 0:
         return -np.inf
     return (
@@ -43,6 +82,23 @@ def X(phi_rad, d, y):
 
 
 def Y(phi_rad, d, x):
+    """Return y coordinate for the projected line at a given x.
+
+    Parameters
+    ----------
+    phi_rad : float
+        Track angle in radians.
+    d : float
+        Impact parameter (mm).
+    x : float
+        x-coordinate at which to compute y.
+
+    Returns
+    -------
+    float
+        y coordinate (mm) or -inf when phi_rad corresponds to an undefined
+        tangent in the code (handled historically by the original code).
+    """
     if phi_rad == 90:
         return -np.inf
     return np.tan(phi_rad) * x + (
@@ -52,6 +108,15 @@ def Y(phi_rad, d, x):
 
 # Compute parameters of track in cluster
 def compute_line_params(phi_deg, d):
+    """Convert angle in degrees and impact `d` to line parameters.
+
+    Returns
+    -------
+    (m, q, phi_rad)
+        m : slope of the projected line
+        q : intercept term in y = m*x + q
+        phi_rad : input angle converted to radians
+    """
     phi_rad = phi_deg / 180 * np.pi
     m = np.tan(phi_rad)
     q = (np.cos(phi_rad) * yc - np.sin(phi_rad) * xc + d) / np.cos(phi_rad)
@@ -60,6 +125,12 @@ def compute_line_params(phi_deg, d):
 
 # Cluster lengths
 def ClusterLengths(phi_rad, d):
+    """Compute various projected lengths of a track crossing the pad map.
+
+    The function returns a tuple (r_diag, r_vert, r_cros, L) where the first
+    three are lengths measured in different segmentation schemes (diagonal,
+    vertical, cross) and L is the total length across the full sub-map.
+    """
     out_vert = 0
     out_diag = 0
     out_cros = 0

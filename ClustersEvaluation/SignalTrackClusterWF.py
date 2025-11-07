@@ -1,3 +1,11 @@
+"""Interactive cluster waveform display for a projected track.
+
+This script uses the shared `ClustersUtils` interactive figure to show
+the per-cluster and per-pad contributions from a track described by angle
+and impact parameter. The plotted traces are normalized by the appropriate
+cluster length where relevant.
+"""
+
 from sys import path
 
 path.append("Headers/")

@@ -1,3 +1,14 @@
+"""Utilities and interactive widgets for cluster/track visualization.
+
+This module configures a compact interactive figure for visualizing cluster
+and track geometry and per-cell responses. It creates sliders for RC, drift
+distance, angle and impact, a Reset button, and a small map that displays
+the current track position.
+
+The module relies on geometric helpers from `GeometryUtils` and model
+functions from `ModelUtils`.
+"""
+
 from sys import path
 
 path.append("Headers/")

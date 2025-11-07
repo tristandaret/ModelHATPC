@@ -1,3 +1,11 @@
+"""Interactive reactor-focused oscillation probability explorer.
+
+This script provides interactive visualisations tailored for reactor and
+short-baseline experiments. It includes sliders for energy, baseline and
+mixing parameters, and draws markers for representative experiments like
+JUNO and KamLAND. Use it to generate thesis figures or pedagogical plots.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider

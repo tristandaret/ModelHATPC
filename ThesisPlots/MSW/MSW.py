@@ -1,3 +1,11 @@
+"""Plot Mikheyev–Smirnov–Wolfenstein (MSW) resonance curves.
+
+This script computes effective matter-modified neutrino mass-squared
+eigenvalues as a function of electron density and produces a publication
+quality plot (`ThesisPlots/MSW/MSW_Resonance_<E>MeV.pdf`). The code uses
+standard units (eV, eV^2) and simple illustrative parameters for plotting.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter

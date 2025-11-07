@@ -1,3 +1,27 @@
+"""Interactive track (lineic deposit) visualization for the HATPC model.
+
+This module creates an interactive matplotlib figure to visualize the
+time-dependent response of grid cells to a lineic (track-like) charge
+deposition. It uses helper functions from the `Headers` package:
+`compute_line_params` to convert angle/impact to line parameters and
+`Compute1D` to get the cell-integrated time response for a line deposit.
+
+Controls
+--------
+- Vertical sliders adjust RC, drift length `z`, track angle `phi` and impact
+    parameter `d`. Adjusting the sliders updates the map and recomputes every
+    cell trace.
+
+Run
+---
+Execute from the repository root::
+
+        python Model/GridTrack.py
+
+See `Headers/ModelUtils.py` and `Headers/GridUtils.py` for model details and
+shared plotting defaults.
+"""
+
 from sys import path
 
 path.append("Headers/")
@@ -20,7 +44,7 @@ slider_defs = {
         valmax=250,
         valinit=RC,
         step=1,
-        color="C4"
+        color="C4",
     ),
     "z": dict(
         ax=[left2, low1, 0.025, dySlider],
@@ -29,7 +53,7 @@ slider_defs = {
         valmax=1000,
         valinit=z,
         step=1,
-        color="C4"
+        color="C4",
     ),
     "phi": dict(
         ax=[left1, low2, 0.025, dySlider],
@@ -38,7 +62,7 @@ slider_defs = {
         valmax=90 - 1e-6,
         valinit=42,
         step=0.1,
-        color=varcolor
+        color=varcolor,
     ),
     "d": dict(
         ax=[left2, low2, 0.025, dySlider],
@@ -47,7 +71,7 @@ slider_defs = {
         valmax=diag / 2,
         valinit=0,
         step=0.1,
-        color=varcolor
+        color=varcolor,
     ),
 }
 
@@ -118,7 +142,7 @@ for iX in range(nX):
             ha="right",
             va="top",
             transform=ax.transAxes,
-            fontsize=25 - 2*nY,
+            fontsize=25 - 2 * nY,
             bbox=dict(boxstyle="round", facecolor=varcolor),
             color=varforeground,
         )
@@ -138,6 +162,22 @@ for iX in range(nX):
 
 # ========================= Slider Callback Update =========================
 def update(val):
+    """Matplotlib slider callback to update the track display.
+
+    Parameters
+    ----------
+    val : float
+        Callback argument passed by matplotlib (ignored). The function reads
+        values from the global `sliders` dictionary.
+
+    Effects
+    -------
+    - Recomputes line parameters (m, q) from `phi` and `d`.
+    - Updates the mapping line shown on the map axes.
+    - Recomputes time traces for each cell using `Compute1D` and updates the
+      plotted lines and text summaries.
+    """
+
     phi = sliders["phi"].val
     if abs(phi) < 1e-6:
         phi = 1e-6 * np.sign(phi or 1)

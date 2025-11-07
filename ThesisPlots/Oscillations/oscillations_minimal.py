@@ -1,3 +1,11 @@
+"""Interactive minimal oscillation probability explorer.
+
+This script provides an interactive matplotlib visualization of neutrino
+oscillation probabilities P(ν_alpha -> ν_beta) as a function of baseline,
+for configurable neutrino energy and mixing parameters. It was used to
+produce illustrative plots for thesis figures and teaching demonstrations.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider

@@ -1,3 +1,20 @@
+"""Physical model utilities for the HATPC lineic-charge project.
+
+This module provides the core physics computation routines used by the
+interactive visualizations. Functions compute the deposited charge (fC), the
+current (fC/ns), and the shaped signal obtained by convolving with the
+electronics transfer function (ETF). Units used throughout are:
+
+- time: ns
+- space: mm
+- charge: fC
+
+The module exposes helper wrappers `Compute0D` and `Compute1D` which dispatch
+to the appropriate function for the chosen `vartype` ("Signal", "Charge",
+"Current"). Physical and electronics constants are defined near the top of
+the file.
+"""
+
 import numpy as np
 import scipy.special as sc
 from scipy import signal
@@ -36,6 +53,30 @@ C = ws / (2 * Q)
 # Functions ---------------------------------------------------------------------------------------------------------------------
 # Type of plot
 def Compute0D(t, x0, y0, xmin, xmax, ymin, ymax, RC, z, type):
+    """Dispatch wrapper for a point (0D) deposit.
+
+    Parameters
+    ----------
+    t : array_like
+        Time axis (ns).
+    x0, y0 : float
+        Drop coordinates (mm) relative to pad origins.
+    xmin, xmax, ymin, ymax : float
+        Cell boundaries (mm).
+    RC : float
+        RC (ns/mm) diffusion/resistance parameter.
+    z : float
+        Drift length (mm).
+    type : str
+        One of "Signal", "Charge", or "Current" determining which
+        quantity is returned.
+
+    Returns
+    -------
+    numpy.ndarray
+        Array with the requested quantity evaluated on `t`.
+    """
+
     if type == "Signal":
         return Signal0D(t, x0, y0, xmin, xmax, ymin, ymax, RC, z)
     elif type == "Charge":
@@ -45,6 +86,30 @@ def Compute0D(t, x0, y0, xmin, xmax, ymin, ymax, RC, z, type):
 
 
 def Compute1D(t, m, q, xmin, xmax, ymin, ymax, RC, z, type):
+    """Dispatch wrapper for a lineic (1D) deposit.
+
+    Parameters
+    ----------
+    t : array_like
+        Time axis (ns).
+    m, q : float
+        Line parameters y = m*x + q describing the track projection.
+    xmin, xmax, ymin, ymax : float
+        Cell boundaries (mm).
+    RC : float
+        RC (ns/mm) diffusion/resistance parameter.
+    z : float
+        Drift length (mm).
+    type : str
+        One of "Signal", "Charge", or "Current" determining which
+        quantity is returned.
+
+    Returns
+    -------
+    numpy.ndarray
+        Array with the requested quantity evaluated on `t`.
+    """
+
     if type == "Signal":
         return Signal1D(t, m, q, xmin, xmax, ymin, ymax, RC, z)
     elif type == "Charge":
@@ -55,6 +120,13 @@ def Compute1D(t, m, q, xmin, xmax, ymin, ymax, RC, z, type):
 
 # Electronics functions
 def Get_max_ETF(t):
+    """Return the maximum of the electronics transfer function (ETF).
+
+    The ETF is defined analytically below and this helper computes its
+    maximum over the provided time array. The value is used to normalize the
+    ETF so that signals are returned in ADC-like units.
+    """
+
     ETF = np.heaviside(t, 1) * (
         np.exp(-ws * t) + np.exp(-C * t) * (A * np.sin(B * t) - np.cos(B * t))
     )
@@ -65,6 +137,13 @@ max_ETF = Get_max_ETF(t)
 
 
 def ETF(t):
+    """Normalized electronics transfer function.
+
+    The function returns the ETF sampled on `t` and normalized so that its
+    peak corresponds to an ADC scale used elsewhere in the code (4096/120
+    factor is kept from the original implementation).
+    """
+
     ETF = np.heaviside(t, 1) * (
         np.exp(-ws * t) + np.exp(-C * t) * (A * np.sin(B * t) - np.cos(B * t))
     )
@@ -72,7 +151,13 @@ def ETF(t):
 
 
 def dETFdt(t):
-    # max_ETF = max(ETF(t))
+    """Time derivative of the normalized ETF.
+
+    The derivative is used when convolving the deposited charge with the
+    electronics response to obtain the shaped signal. The result is scaled
+    by the same normalization factor as `ETF`.
+    """
+
     dETFdt = np.heaviside(t, 1) * (
         -ws * np.exp(-ws * t)
         + np.exp(-C * t) * ((B - A * C) * np.sin(B * t) + (A * B + C) * np.cos(B * t))
@@ -82,6 +167,15 @@ def dETFdt(t):
 
 # Charge functions
 def Charge0D(t, x0, y0, xmin, xmax, ymin, ymax, RC, z):  # fC
+    """Compute the integrated charge (fC) collected by a cell for a point
+    deposit centered at (x0, y0).
+
+    The model assumes a Gaussian transverse spread with time-dependent
+    standard deviation sigma(t) which includes diffusion and an RC-dependent
+    term. The integral over the rectangular pad is computed using error
+    functions.
+    """
+
     sigma = np.sqrt(2 * t / RC + Dt**2 * z)  # includes transverse diffusion
     erfx = sc.erf((xmax - x0) / (sigma * np.sqrt(2))) - sc.erf(
         (xmin - x0) / (sigma * np.sqrt(2))
@@ -93,6 +187,14 @@ def Charge0D(t, x0, y0, xmin, xmax, ymin, ymax, RC, z):  # fC
 
 
 def Charge1D(t, m, q, xmin, xmax, ymin, ymax, RC, z, Dt=Dt):  # fC
+    """Compute the integrated charge (fC) collected by a cell for a
+    lineic (track) deposit described by y = m*x + q.
+
+    The expression is an analytic integral of the Gaussian-convolved linear
+    charge density over the rectangular pad. `Dt` sets the transverse
+    diffusion parametrization and can be overridden for testing.
+    """
+
     sigma = np.sqrt(2 * t / RC + Dt**2 * z)  # includes transverse diffusion
 
     coeff1 = np.sqrt(2 * (1 + m**2) / np.pi) * sigma
@@ -129,6 +231,12 @@ def Charge1D(t, m, q, xmin, xmax, ymin, ymax, RC, z, Dt=Dt):  # fC
 
 # Current functions in fC/ns = µA
 def Current0D(t, x0, y0, xmin, xmax, ymin, ymax, RC, z):
+    """Approximate current (fC/ns) for a point deposit via finite differences.
+
+    The function uses a simple forward-difference approximation on the
+    `t` grid. The units are fC/ns (equivalent to µA when multiplied by 1e3).
+    """
+
     return (
         Charge0D(t + 1, x0, y0, xmin, xmax, ymin, ymax, RC, z)
         - Charge0D(t, x0, y0, xmin, xmax, ymin, ymax, RC, z)
@@ -136,6 +244,8 @@ def Current0D(t, x0, y0, xmin, xmax, ymin, ymax, RC, z):
 
 
 def Current1D(t, m, q, xmin, xmax, ymin, ymax, RC, z):
+    """Approximate current (fC/ns) for a lineic deposit via finite differences."""
+
     return (
         Charge1D(t + 1, m, q, xmin, xmax, ymin, ymax, RC, z)
         - Charge1D(t, m, q, xmin, xmax, ymin, ymax, RC, z)
@@ -144,6 +254,8 @@ def Current1D(t, m, q, xmin, xmax, ymin, ymax, RC, z):
 
 # Signal functions
 def Signal0D(t, x0, y0, xmin, xmax, ymin, ymax, RC, z):
+    """Shaped signal for a point deposit: convolution of charge with ETF'"""
+
     return (
         np.convolve(
             Charge0D(t, x0, y0, xmin, xmax, ymin, ymax, RC, z), dETFdt(t), mode="full"
@@ -153,6 +265,8 @@ def Signal0D(t, x0, y0, xmin, xmax, ymin, ymax, RC, z):
 
 
 def Signal1D(t, m, q, xmin, xmax, ymin, ymax, RC, z, Dt=Dt):
+    """Shaped signal for a line deposit: convolution of charge with ETF'"""
+
     return (
         np.convolve(
             Charge1D(t, m, q, xmin, xmax, ymin, ymax, RC, z, Dt=Dt),
@@ -167,6 +281,12 @@ dETFdt_t = dETFdt(t)
 
 
 def Signal1DFFT(t, m, q, xmin, xmax, ymin, ymax, RC, z):
+    """An FFT-based convolution variant of Signal1D.
+
+    This implementation uses `scipy.signal.fftconvolve` which can be faster for
+    long arrays. The returned array is truncated to the original time length.
+    """
+
     result = (
         signal.fftconvolve(
             Charge1D(t, m, q, xmin, xmax, ymin, ymax, RC, z), dETFdt(t), mode="full"

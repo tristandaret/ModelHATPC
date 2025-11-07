@@ -1,3 +1,23 @@
+"""Grid plotting defaults and shared UI elements.
+
+This module centralizes plotting defaults and shared matplotlib objects
+used across the visualization scripts. It defines the time axis, plotting
+colors and units depending on `vartype` (Signal, Charge or Current), creates
+the main `fig, axs` grid of subplots and provides a `Reset` button used by
+interactive figures.
+
+Exports
+-------
+- fig, axs : matplotlib.figure.Figure and Axes array
+- t, timescale, timeunit : time axis and units
+- varcolor, varforeground, varxminplot, varxmaxplot, varyminplot, varymaxplot
+- scalefactor, dim, unit, ylabel : plotting labels and scaling
+- button : matplotlib Button instance to reset sliders
+
+The plotting scripts import this module and then build the rest of the UI
+around these shared objects.
+"""
+
 from sys import path
 
 path.append("Headers/")

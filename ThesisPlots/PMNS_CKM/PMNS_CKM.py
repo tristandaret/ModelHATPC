@@ -1,3 +1,11 @@
+"""Plot PMNS and CKM matrices as colored rounded boxes.
+
+This small script produces publication-ready illustrations of the PMNS
+neutrino mixing matrix and the CKM quark mixing matrix, saving each as a
+PDF. The color intensity is proportional to the square-root of element
+magnitudes to provide visual contrast between small and large entries.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch

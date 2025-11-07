@@ -1,3 +1,11 @@
+"""Create dE/dx lookup tables and store them in a ROOT TTree.
+
+This script computes length maps and dE/dx correction weights for a grid of
+track angles, impact parameters and drift distances. Results are saved to a
+ROOT file with a TTree for easy downstream access. The code was used to
+generate LUTs matching the HATPC geometry.
+"""
+
 from sys import path
 
 path.append("Headers/")

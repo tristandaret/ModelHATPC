@@ -1,3 +1,11 @@
+"""Visualize precomputed LUT-like weight arrays and length maps.
+
+This utility builds the length map and the corresponding weight array used
+to correct ADC amplitudes into dE/dx. It relies on functions in
+`Headers/ModelUtils.py` and `Headers/GeometryUtils.py` and produces a heatmap
+showing the weight as a function of track angle and impact parameter.
+"""
+
 from sys import path
 
 path.append("Headers/")

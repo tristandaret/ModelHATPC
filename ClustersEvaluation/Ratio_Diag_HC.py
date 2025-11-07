@@ -1,3 +1,15 @@
+"""Estimate cluster amplitude ratios and produce diagnostic heatmaps.
+
+This script scans track angles and impact parameters across a small
+sub-map and computes the ratios between the true deposited amplitude and
+different cluster estimators (diagonal, half-cross, vertical, leading pad).
+It stores several diagnostic heatmaps and histograms into a multi-page PDF
+in `Illustrations/`.
+
+Note: the script can be computationally intensive depending on the grid
+resolution (`nsteps`) and the number of tracks considered.
+"""
+
 from sys import path
 
 path.append("Headers/")

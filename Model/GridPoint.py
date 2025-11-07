@@ -1,3 +1,31 @@
+"""Interactive point-deposit visualization for the HATPC lineic-charge model.
+
+This module builds an interactive matplotlib figure which shows the time
+response (signal/charge/current) in each cell of a grid for a point-like
+charge deposit. It was originally created while solving the telegrapher's
+equation for lineic deposits and extending the point-like solution.
+
+The script expects helper functions and global parameters to be provided by
+the `Headers` package (notably `ModelUtils` and `GridUtils`). Typical globals
+used here include `t`, `timescale`, `nX`, `nY`, `xleft`, `ylow`, `xwidth`,
+`ywidth`, `xc`, `yc`, `RC`, `z`, `Dt`, `scalefactor`, and plotting defaults.
+
+Usage
+-----
+Run from the repository root::
+
+        python Model/GridPoint.py
+
+This opens an interactive window with vertical sliders for RC, drift (z), and
+the drop x/y position. Moving sliders re-computes the per-cell traces using
+`Compute0D` from `ModelUtils` and updates the plots.
+
+Notes
+-----
+- Docstrings are intentionally concise; see `Headers/ModelUtils.py` for the
+    physical model (Compute0D) and parameter definitions.
+"""
+
 from sys import path
 
 path.append("Headers/")
@@ -147,6 +175,23 @@ for iX in range(nX):
 
 # ========================= Slider Callback Update =========================
 def update(val):
+    """Update callback for sliders.
+
+    Parameters
+    ----------
+    val : float
+        Ignored by the function (required by matplotlib slider callback
+        signature). The function reads current slider values directly and
+        recomputes the per-cell traces.
+
+    Side effects
+    -----------
+    - Updates the map marker for the drop point.
+    - Recomputes time traces for every cell using Compute0D and sets the
+      y-data of the plotted lines and summary text boxes.
+    - Forces the figure canvas to redraw.
+    """
+
     x0 = sliders["x"].val + xc
     y0 = sliders["y"].val + yc
     drop_point.set_data([x0], [y0])
