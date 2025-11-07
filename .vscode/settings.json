@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "sum_9.C": "cpp"
+    },
+    "python.analysis.extraPaths": [
+        "./DPR_Headers",
+        "./Headers"
+    ],
+    "explorer.sortOrder": "type",
+    "editor.tabSize": 4
+}

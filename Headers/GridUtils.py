@@ -1,0 +1,72 @@
+from sys import path
+
+path.append("Headers/")
+from ModelUtils import *
+import matplotlib.pyplot as plt
+from matplotlib.widgets import Button
+
+# ========================= Variable Setup =========================
+# Variable types: Signal, Charge, Current
+vartype = "Signal"
+
+if vartype == "Signal":
+    timescale = 1
+    timeunit = "ns"
+    t = np.linspace(1, 3000, 500)
+    varcolor = "C1"
+    varforeground = "black"
+    varxminplot = 0
+    varxmaxplot = 3000
+    varyminplot = -200
+    varymaxplot = 1000
+    scalefactor = 1
+    dim = "ADC$_{max}$"
+    unit = ""
+    ylabel = "ADC count"
+elif vartype == "Charge":
+    tmax = int(5e3)  # Maximum time in ns
+    timescale = 1000  # Timescale factor to get in µs
+    timeunit = "µs"
+    ntsteps = int(5e3)
+    t = np.linspace(1, tmax, ntsteps)
+    varcolor = "C3"
+    varforeground = "white"
+    varxminplot = 0
+    varxmaxplot = tmax
+    varyminplot = -3
+    varymaxplot = 30
+    scalefactor = 1
+    dim = "Q$_{max}$"
+    unit = "fC"
+    ylabel = "Charge (fC)"
+elif vartype == "Current":
+    timescale = 1
+    timeunit = "ns"
+    tmax = int(3000)
+    ntsteps = int(3000)
+    t = np.linspace(1, tmax, ntsteps)
+    varcolor = "C0"
+    varforeground = "white"
+    varxminplot = 0
+    varxmaxplot = tmax
+    varyminplot = -20
+    varymaxplot = 20
+    scalefactor = 1e3  # Scale factor to convert from µA to nA
+    dim = "I$_{max}$"
+    unit = "nA"
+    ylabel = "Current (nA)"
+
+# ========================= Plot Setup =========================
+fig, axs = plt.subplots(nY, nX, sharex=True, sharey=True, figsize=(12, 9))
+fig.subplots_adjust(left=0.2, right=0.98, bottom=0.07, top=0.98)
+lines, texts = [], []
+# Number of ticks on x-axis
+nxticks = t.max() // 1000 + 1  # Number of ticks on x-axis
+for ax in axs.flat:
+    ax.set_xticks(np.linspace(varxminplot, varxmaxplot / timescale, int(nxticks)))
+
+
+# ========================= Reset Button Setup =========================
+resetax = fig.add_axes([0.035, 0.05, 0.085, 0.06])
+button = Button(resetax, "Reset", hovercolor="0.975")
+button.label.set_fontsize(20)
