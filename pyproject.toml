@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "modelhatpc"
+version = "0.0.0"
+description = "ModelHATPC — analysis tools and models for HATPC"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [ { name = "Tristan Daret", email = "tristan.daret.phd@gmail.com" } ]
+requires-python = ">=3.8"
+keywords = ["HATPC", "model", "tracks"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "black>=24.3.0",
+  "isort>=5.12.0",
+  "flake8>=6.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/tristandaret/ModelHATPC"
+
+[tool.black]
+line-length = 88
+target-version = ["py38"]
