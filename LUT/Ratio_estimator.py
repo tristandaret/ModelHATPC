@@ -5,13 +5,13 @@ energy deposition (from geometry, `L`) and the maximal ADC amplitude from
 the model. This helper was used to validate and debug LUT entries.
 """
 
-from sys import path
+import numpy as np
 
-path.append("Headers/")
-from ModelUtils import *
+from Headers import GeometryUtils as geo
+from Headers import ModelUtils as mu
 
 # compute ETF(t) once and store in a distinct variable to avoid shadowing
-ETF_t = lambdaG * ETF(t)
+ETF_t = mu.lambdaG * mu.ETF(mu.t)
 
 
 def ratio(RC, z, d, phi, L):
@@ -41,31 +41,39 @@ def ratio(RC, z, d, phi, L):
     """
     phi_rad = phi / 180 * np.pi
     m = np.tan(phi_rad)
-    q = (d - xc * np.sin(phi_rad) + yc * np.cos(phi_rad)) / np.cos(phi_rad)
+    q = (d - geo.xc * np.sin(phi_rad) + geo.yc * np.cos(phi_rad)) / np.cos(phi_rad)
     ETFr = L * np.max(ETF_t)
-    ADC = np.max(Signal1D(t, m, q, xmin, xmax, ymin, ymax, RC, z)[: len(t)])
-    ADC = np.max(Signal1D(t, m, q, xmin, xmax, ymin, ymax, RC, z)[: len(t)])
+    ADC = np.max(
+        mu.Signal1D(mu.t, m, q, geo.xmin, geo.xmax, geo.ymin, geo.ymax, RC, z)[
+            : len(mu.t)
+        ]
+    )
+    ADC = np.max(
+        mu.Signal1D(mu.t, m, q, geo.xmin, geo.xmax, geo.ymin, geo.ymax, RC, z)[
+            : len(mu.t)
+        ]
+    )
 
     # Determine intersection points of the line with the central pad
     x = []
     y = []
-    y_xmin = Y(phi_rad, d, xmin)
-    y_xmax = Y(phi_rad, d, xmax)
-    x_ymin = X(phi_rad, d, ymin)
-    x_ymax = X(phi_rad, d, ymax)
+    y_xmin = geo.Y(phi_rad, d, geo.xmin)
+    y_xmax = geo.Y(phi_rad, d, geo.xmax)
+    x_ymin = geo.X(phi_rad, d, geo.ymin)
+    x_ymax = geo.X(phi_rad, d, geo.ymax)
 
-    if ymin <= y_xmin < ymax:
-        x.append(xmin)
+    if geo.ymin <= y_xmin < geo.ymax:
+        x.append(geo.xmin)
         y.append(y_xmin)
-    if ymin <= y_xmax < ymax:
-        x.append(xmax)
+    if geo.ymin <= y_xmax < geo.ymax:
+        x.append(geo.xmax)
         y.append(y_xmax)
-    if xmin <= x_ymin < xmax:
+    if geo.xmin <= x_ymin < geo.xmax:
         x.append(x_ymin)
-        y.append(ymin)
-    if xmin <= x_ymax < xmax:
+        y.append(geo.ymin)
+    if geo.xmin <= x_ymax < geo.xmax:
         x.append(x_ymax)
-        y.append(ymax)
+        y.append(geo.ymax)
 
     L = np.sqrt((y[1] - y[0]) ** 2 + (x[1] - x[0]) ** 2)
     print(f"{ETFr/ADC:.5f} = {ETFr:.2f}/{ADC:.2f} | L = {L:.3f}")

@@ -44,5 +44,5 @@ Repository layout
 
 LaTeX requirement for plots
 -----------------
-Some figures are rendered using `matplotlib` with `text.usetex=True`.  
+Some figures are rendered using `matplotlib` with `text.usetex=True`.
 To reproduce the plots, install a LaTeX distribution (e.g. TeX Live) and ensure `latex`, `dvipng`, and `ghostscript` are in the PATH.

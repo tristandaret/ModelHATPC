@@ -5,11 +5,18 @@ for a projected track. Note: this view was written for `nY == 5` and
 contains hard-coded index assumptions; use with care if `nY` differs.
 """
 
-from sys import path
+import matplotlib.pyplot as plt
+import numpy as np
 
-path.append("Headers/")
-from ClustersUtils import *
-from GeometryUtils import *
+from Headers import ClustersUtils as clu
+from Headers import GeometryUtils as geo
+from Headers import ModelUtils as mu
+
+# Local aliases
+fig = clu.fig
+axs = clu.axs
+sliders = clu.sliders
+map_line = clu.map_line
 
 # DOES NOT WORK FOR nY != 5
 # ========================= Lines =========================
@@ -28,7 +35,7 @@ C0dark = "#14507c"
 colors = [C0light, C0light, "C0", C0dark, C0dark, "C1", "Black"]
 
 lines = [
-    axs.plot(t, np.zeros_like(t), lw=3, label=label, color=color)[0]
+    axs.plot(mu.t, np.zeros_like(mu.t), lw=3, label=label, color=color)[0]
     for label, color in zip(labels, colors)
 ]
 lines[0].set_linestyle("dashdot")
@@ -64,15 +71,17 @@ def update(val):
     - Sets the initial y-limits on first call and triggers a redraw.
     """
     phi_val = max(sliders["phi"].val, 1e-6)
-    m, q, phi_rad = compute_line_params(phi_val, sliders["d"].val)
-    r_diag, r_vert, r_cros, L = ClusterLengths(phi_rad, sliders["d"].val)
+    m, q, phi_rad = geo.compute_line_params(phi_val, sliders["d"].val)
+    r_diag, r_vert, r_cros, L = geo.ClusterLengths(phi_rad, sliders["d"].val)
 
-    v_x = np.linspace(xleft - xwidth, xleft + (nX + 1) * xwidth, 10 * nX)
+    v_x = np.linspace(
+        geo.xleft - geo.xwidth, geo.xleft + (geo.nX + 1) * geo.xwidth, 10 * geo.nX
+    )
     v_y = np.tan(phi_rad) * v_x + q
     map_line.set_data(v_x, v_y)
 
     buffers = {
-        name: np.zeros_like(t)
+        name: np.zeros_like(mu.t)
         for name in [
             "topNeigh2",
             "topNeigh1",
@@ -83,20 +92,20 @@ def update(val):
         ]
     }
 
-    for iX, iY in {(2, i) for i in range(nY)}:
+    for iX, iY in {(2, i) for i in range(geo.nY)}:
         print("iY:", iY)
-        sig = Signal1D(
-            t,
+        sig = mu.Signal1D(
+            mu.t,
             m,
             q,
-            xleft + iX * xwidth,
-            xleft + (iX + 1) * xwidth,
-            ylow + iY * ywidth,
-            ylow + (iY + 1) * ywidth,
+            geo.xleft + iX * geo.xwidth,
+            geo.xleft + (iX + 1) * geo.xwidth,
+            geo.ylow + iY * geo.ywidth,
+            geo.ylow + (iY + 1) * geo.ywidth,
             sliders["RC"].val,
             sliders["z"].val,
         )
-        sig = sig[: len(t)]  # Prevent shape mismatch
+        sig = sig[: len(mu.t)]  # Prevent shape mismatch
         buffers["clusVert"] += sig
         if iY == 4:
             buffers["topNeigh2"] += sig
@@ -117,7 +126,7 @@ def update(val):
         lines[4].set_ydata(buffers["botNeigh2"] / r_vert * 10)
         lines[5].set_ydata(buffers["clusVert"] / r_vert * 10)
 
-    lines[6].set_ydata(lambdaG * 10 * ETF(t))
+    lines[6].set_ydata(mu.lambdaG * 10 * mu.ETF(mu.t))
     axs.legend(fontsize=20)
 
     # Update Y-axis limits

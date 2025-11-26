@@ -21,10 +21,14 @@ around these shared objects.
 from sys import path
 
 path.append("Headers/")
-from ModelUtils import *
-import matplotlib.pyplot as plt
-from matplotlib.widgets import Button
 import warnings
+from typing import Any, List
+
+import GeometryUtils as geo
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.widgets import Button
+
 # ========================= Variable Setup =========================
 # Variable types: Signal, Charge, Current
 vartype = "Signal"
@@ -71,13 +75,17 @@ elif vartype == "Current":
     varxmaxplot = tmax
     varyminplot = -20
     varymaxplot = 20
-    scalefactor = 1e3  # Scale factor to convert from µA to nA
+    scalefactor = int(1e3)  # Scale factor to convert from µA to nA
     dim = "I$_{max}$"
     unit = "nA"
     ylabel = "Current (nA)"
 else:
     # Fallback: ensure all plotting variables are defined and notify the user.
-    warnings.warn(f"Unknown vartype '{vartype}', using default 'Signal' settings.", UserWarning)
+    warnings.warn(
+        f"Unknown vartype '{vartype}', using default 'Signal' settings.",
+        UserWarning,
+        stacklevel=2,
+    )
     timescale = 1
     timeunit = "ns"
     t = np.linspace(1, 3000, 500)
@@ -94,11 +102,12 @@ else:
     ylabel = "Current (nA)"
 
 # ========================= Plot Setup =========================
-fig, axs = plt.subplots(nY, nX, sharex=True, sharey=True, figsize=(12, 9))
+fig, axs = plt.subplots(geo.nY, geo.nX, sharex=True, sharey=True, figsize=(12, 9))
 fig.subplots_adjust(left=0.2, right=0.98, bottom=0.07, top=0.98)
-lines, texts = [], []
+lines: List[Any] = []
+texts: List[Any] = []
 # Number of ticks on x-axis
-nxticks = t.max() // 1000 + 1  # Number of ticks on x-axis
+nxticks = int(t.max() // 1000) + 1  # Number of ticks on x-axis
 for ax in axs.flat:
     ax.set_xticks(np.linspace(varxminplot, varxmaxplot / timescale, int(nxticks)))
 

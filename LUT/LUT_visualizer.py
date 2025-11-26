@@ -6,23 +6,24 @@ to correct ADC amplitudes into dE/dx. It relies on functions in
 showing the weight as a function of track angle and impact parameter.
 """
 
-from sys import path
-
-path.append("Headers/")
-from ModelUtils import *
 import time
+from typing import List
+
+import numpy as np
 from matplotlib import pyplot as plt
 
+from Headers import GeometryUtils as geo
+from Headers import ModelUtils as mu
 
 # Computations
-ETF = lambdaG * ETF(t)
+ETF_t = mu.lambdaG * mu.ETF(mu.t)
 nphi = 250
 nd = 250
 RC = 120
 z = 250
 
 h2_L = np.full((nd, nphi), np.nan)
-v_d = np.linspace(0, diag / 2, nd)
+v_d = np.linspace(0, geo.diag / 2, nd)
 v_phi = np.linspace(1e-6, 90 - 1e-6, nphi)
 weight_array = np.full((nd, nphi), np.nan)
 
@@ -34,29 +35,29 @@ for iphi in range(nphi):
         d = v_d[id]
 
         # Determine the length of the track across the central pad
-        x = []
-        y = []
+        x: List[float] = []
+        y: List[float] = []
 
-        y_xmin = Y(phi_rad, d, xmin)
-        y_xmax = Y(phi_rad, d, xmax)
-        x_ymin = X(phi_rad, d, ymin)
-        x_ymax = X(phi_rad, d, ymax)
+        y_xmin = geo.Y(phi_rad, d, geo.xmin)
+        y_xmax = geo.Y(phi_rad, d, geo.xmax)
+        x_ymin = geo.X(phi_rad, d, geo.ymin)
+        x_ymax = geo.X(phi_rad, d, geo.ymax)
 
-        if ymin <= y_xmin < ymax:
-            x.append(xmin)
+        if geo.ymin <= y_xmin < geo.ymax:
+            x.append(geo.xmin)
             y.append(y_xmin)
 
-        if ymin <= y_xmax < ymax:
-            x.append(xmax)
+        if geo.ymin <= y_xmax < geo.ymax:
+            x.append(geo.xmax)
             y.append(y_xmax)
 
-        if xmin <= x_ymin < xmax:
+        if geo.xmin <= x_ymin < geo.xmax:
             x.append(x_ymin)
-            y.append(ymin)
+            y.append(geo.ymin)
 
-        if xmin <= x_ymax < xmax:
+        if geo.xmin <= x_ymax < geo.xmax:
             x.append(x_ymax)
-            y.append(ymax)
+            y.append(geo.ymax)
 
         L = 0
         if len(x) == 2:
@@ -74,12 +75,16 @@ for iphi in range(nphi):
     for id in range(nd):
         # print(f"d = {d:.2f} mm")
         m = np.tan(phi_rad)
-        q = (np.cos(phi_rad) * yc - np.sin(phi_rad) * xc + v_d[id]) / np.cos(
+        q = (np.cos(phi_rad) * geo.yc - np.sin(phi_rad) * geo.xc + v_d[id]) / np.cos(
             phi_rad
         )  # intercept
 
-        ETFr = h2_L[id, iphi] * np.max(ETF)
-        ADC = np.max(Signal1D(t, m, q, xmin, xmax, ymin, ymax, RC, z)[: len(t)])
+        ETFr = h2_L[id, iphi] * np.max(ETF_t)
+        ADC = np.max(
+            mu.Signal1D(mu.t, m, q, geo.xmin, geo.xmax, geo.ymin, geo.ymax, RC, z)[
+                : len(mu.t)
+            ]
+        )
         if h2_L[id, iphi] != 0:
             weight_array[id, iphi] = ETFr / ADC
 
@@ -105,10 +110,10 @@ plt.yticks(fontsize=20)
 
 plt.tight_layout()
 plt.savefig(
-    f"LUT/LUT_Dt{Dt*np.power(10,7/2):.0f}_PT{PT:d}_RC{RC:d}_z{z:d}_nphi{nphi:d}_nd{nd:d}.pdf"
+    f"LUT/LUT_Dt{mu.Dt*np.power(10, 7/2):.0f}_PT{mu.PT:d}_RC{RC:d}_z{z:d}_nphi{nphi:d}_nd{nd:d}.pdf"
 )
 plt.savefig(
-    f"LUT/LUT_Dt{Dt*np.power(10,7/2):.0f}_PT{PT:d}_RC{RC:d}_z{z:d}_nphi{nphi:d}_nd{nd:d}.png"
+    f"LUT/LUT_Dt{mu.Dt*np.power(10, 7/2):.0f}_PT{mu.PT:d}_RC{RC:d}_z{z:d}_nphi{nphi:d}_nd{nd:d}.png"
 )
 
 plt.show()

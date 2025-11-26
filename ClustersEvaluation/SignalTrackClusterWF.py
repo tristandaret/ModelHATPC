@@ -6,10 +6,30 @@ and impact parameter. The plotted traces are normalized by the appropriate
 cluster length where relevant.
 """
 
-from sys import path
+# Explicit imports from the shared Headers package
+import sys
 
-path.append("Headers/")
-from ClustersUtils import *
+import matplotlib.pyplot as plt
+import numpy as np
+
+sys.path.append("Headers/")
+import ClustersUtils as clu
+import GeometryUtils as geo
+import ModelUtils as mu
+
+# Local aliases for objects created by the interactive helper module
+fig = clu.fig
+axs = clu.axs
+sliders = clu.sliders
+map_line = clu.map_line
+# Common model/geometry aliases used throughout the script
+t = mu.t
+nX = geo.nX
+nY = geo.nY
+xleft = geo.xleft
+xwidth = geo.xwidth
+ylow = geo.ylow
+ywidth = geo.ywidth
 
 # ========================= Lines =========================
 labels = [
@@ -61,31 +81,33 @@ def update(val):
     - Sets the initial y-limits on first call and triggers a redraw.
     """
     phi_val = max(sliders["phi"].val, 1e-6)
-    m, q, phi_rad = compute_line_params(phi_val, sliders["d"].val)
-    Ldiag, Lvert, Lcros, Ltotal = ClusterLengths(phi_rad, sliders["d"].val)
+    m, q, phi_rad = geo.compute_line_params(phi_val, sliders["d"].val)
+    Ldiag, Lvert, Lcros, Ltotal = geo.ClusterLengths(phi_rad, sliders["d"].val)
 
-    v_x = np.linspace(xleft - xwidth, xleft + (nX + 1) * xwidth, 10 * nX)
+    v_x = np.linspace(
+        geo.xleft - geo.xwidth, geo.xleft + (geo.nX + 1) * geo.xwidth, 10 * geo.nX
+    )
     v_y = np.tan(phi_rad) * v_x + q
     map_line.set_data(v_x, v_y)
 
     buffers = {
-        name: np.zeros_like(t)
+        name: np.zeros_like(mu.t)
         for name in ["centralPad", "vertClus", "diagClus", "halfClus"]
     }
 
-    for iX in range(nX):
-        for iY in range(nY):
-            sig = Signal1D(
-                t,
+    for iX in range(geo.nX):
+        for iY in range(geo.nY):
+            sig = mu.Signal1D(
+                mu.t,
                 m,
                 q,
-                xleft + iX * xwidth,
-                xleft + (iX + 1) * xwidth,
-                ylow + iY * ywidth,
-                ylow + (iY + 1) * ywidth,
+                geo.xleft + iX * geo.xwidth,
+                geo.xleft + (iX + 1) * geo.xwidth,
+                geo.ylow + iY * geo.ywidth,
+                geo.ylow + (iY + 1) * geo.ywidth,
                 sliders["RC"].val,
                 sliders["z"].val,
-            )[: len(t)]
+            )[: len(mu.t)]
             # Leading pad
             if (iX, iY) == (nX // 2, nY // 2):
                 buffers["centralPad"] += sig
@@ -107,7 +129,7 @@ def update(val):
     if Lcros != 0:
         lines[3].set_ydata(buffers["halfClus"] / Lcros * 10)
 
-    lines[-1].set_ydata(lambdaG * 10 * ETF(t))
+    lines[-1].set_ydata(mu.lambdaG * 10 * mu.ETF(mu.t))
 
     axs.legend(handles=[line for line in lines if line.get_visible()], fontsize=20)
 

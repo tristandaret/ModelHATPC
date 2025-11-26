@@ -25,8 +25,9 @@ shared plotting defaults.
 from sys import path
 
 path.append("Headers/")
-from ModelUtils import *
-from GridUtils import *
+import GeometryUtils as geo
+import GridUtils as gutils
+import ModelUtils as mutils
 from matplotlib.widgets import Slider
 
 # ========================= Sliders Setup =========================
@@ -42,7 +43,7 @@ slider_defs = {
         label="RC\n[ns/mm$^{2}$]",
         valmin=1,
         valmax=250,
-        valinit=RC,
+        valinit=mutils.RC,
         step=1,
         color="C4",
     ),
@@ -51,7 +52,7 @@ slider_defs = {
         label="Drift\n[mm]",
         valmin=0,
         valmax=1000,
-        valinit=z,
+        valinit=mutils.z,
         step=1,
         color="C4",
     ),
@@ -62,22 +63,22 @@ slider_defs = {
         valmax=90 - 1e-6,
         valinit=42,
         step=0.1,
-        color=varcolor,
+        color=gutils.varcolor,
     ),
     "d": dict(
         ax=[left2, low2, 0.025, dySlider],
         label="impact\n[mm]",
-        valmin=-diag / 2,
-        valmax=diag / 2,
+        valmin=-geo.diag / 2,
+        valmax=geo.diag / 2,
         valinit=0,
         step=0.1,
-        color=varcolor,
+        color=gutils.varcolor,
     ),
 }
 
 sliders = {}
 for key, cfg in slider_defs.items():
-    ax = plt.axes(cfg["ax"])
+    ax = gutils.plt.axes(cfg["ax"])
     sliders[key] = Slider(
         ax=ax,
         label=cfg["label"],
@@ -92,18 +93,18 @@ for key, cfg in slider_defs.items():
     sliders[key].valtext.set_fontsize(20)
 
 # Reset button
-button.on_clicked(lambda event: [s.reset() for s in sliders.values()])
+gutils.button.on_clicked(lambda event: [s.reset() for s in sliders.values()])
 
 
 # ========================= Map Plot Setup =========================
-m, q, phi_rad = compute_line_params(sliders["phi"].val, sliders["d"].val)
+m, q, phi_rad = geo.compute_line_params(sliders["phi"].val, sliders["d"].val)
 
-axMap = fig.add_axes((0.035, 0.82, 0.085, 0.12))
-axMap.set_xlim(xleft, xleft + nX * xwidth)
-axMap.set_ylim(ylow, ylow + nY * ywidth)
+axMap = gutils.fig.add_axes((0.035, 0.82, 0.085, 0.12))
+axMap.set_xlim(geo.xleft, geo.xleft + geo.nX * geo.xwidth)
+axMap.set_ylim(geo.ylow, geo.ylow + geo.nY * geo.ywidth)
 axMap.set_title("Track position", fontsize=20)
-axMap.set_xticks(np.arange(xleft, xleft + nX * xwidth, xwidth))
-axMap.set_yticks(np.arange(ylow, ylow + nY * ywidth, ywidth))
+axMap.set_xticks(geo.np.arange(geo.xleft, geo.xleft + geo.nX * geo.xwidth, geo.xwidth))
+axMap.set_yticks(geo.np.arange(geo.ylow, geo.ylow + geo.nY * geo.ywidth, geo.ywidth))
 axMap.tick_params(
     which="both",
     labelleft=False,
@@ -115,52 +116,58 @@ axMap.tick_params(
 )
 axMap.grid()
 
-v_points = np.linspace(-6, 10, 50)
+v_points = geo.np.linspace(-6, 10, 50)
 x_line = (
-    np.cos(phi_rad) ** 2 * xc + np.cos(phi_rad) * np.sin(phi_rad) * yc
-) * v_points + xc
+    geo.np.cos(phi_rad) ** 2 * geo.xc
+    + geo.np.cos(phi_rad) * geo.np.sin(phi_rad) * geo.yc
+) * v_points + geo.xc
 y_line = (
-    np.sin(phi_rad) ** 2 * yc + np.cos(phi_rad) * np.sin(phi_rad) * xc
-) * v_points + yc
+    geo.np.sin(phi_rad) ** 2 * geo.yc
+    + geo.np.cos(phi_rad) * geo.np.sin(phi_rad) * geo.xc
+) * v_points + geo.yc
 (map_line,) = axMap.plot(x_line, y_line, "red")
 
 
 # ========================= Subplots Initialization =========================
-for iX in range(nX):
-    for iY in range(nY):
-        ax = axs[nY - 1 - iY, iX]
-        x0 = xleft + iX * xwidth
-        x1 = x0 + xwidth
-        y0 = ylow + iY * ywidth
-        y1 = y0 + ywidth
-        res = Compute1D(t, m, q, x0, x1, y0, y1, RC, z, vartype)
+for iX in range(geo.nX):
+    for iY in range(geo.nY):
+        ax = gutils.axs[geo.nY - 1 - iY, iX]
+        x0 = geo.xleft + iX * geo.xwidth
+        x1 = x0 + geo.xwidth
+        y0 = geo.ylow + iY * geo.ywidth
+        y1 = y0 + geo.ywidth
+        res = mutils.Compute1D(
+            mutils.t, m, q, x0, x1, y0, y1, mutils.RC, mutils.z, gutils.vartype
+        )
         if res is None:
-            res = np.zeros_like(t)
-        sig = scalefactor * res[: t.size]
-        l = ax.plot(t / timescale, sig, lw=8 - nY, color=varcolor)
+            res = geo.np.zeros_like(mutils.t)
+        sig = gutils.scalefactor * res[: mutils.t.size]
+        line = ax.plot(
+            mutils.t / gutils.timescale, sig, lw=8 - geo.nY, color=gutils.varcolor
+        )
         txt = ax.text(
             0.96,
             0.93,
-            f"{dim} = {np.max(sig):.0f} {unit}\n T$_{{max}}$ = {t[np.argmax(sig)]/timescale:.0f} {timeunit}",
+            f"{gutils.dim} = {geo.np.max(sig):.0f} {gutils.unit}\n T$_{{max}}$ = {mutils.t[geo.np.argmax(sig)]/gutils.timescale:.0f} {gutils.timeunit}",
             ha="right",
             va="top",
             transform=ax.transAxes,
-            fontsize=25 - 2 * nY,
-            bbox=dict(boxstyle="round", facecolor=varcolor),
-            color=varforeground,
+            fontsize=25 - 2 * geo.nY,
+            bbox=dict(boxstyle="round", facecolor=gutils.varcolor),
+            color=gutils.varforeground,
         )
-        lines.append(l)
-        texts.append(txt)
+        gutils.lines.append(line)
+        gutils.texts.append(txt)
 
         if iY == 0:
-            ax.set_xlabel(f"Time ({timeunit})", fontsize=25 - nY)
-            ax.tick_params(axis="x", labelsize=20 - nY)
+            ax.set_xlabel(f"Time ({gutils.timeunit})", fontsize=25 - geo.nY)
+            ax.tick_params(axis="x", labelsize=20 - geo.nY)
         if iX == 0:
-            ax.set_ylabel(f"{ylabel}", fontsize=25 - nX)
-            ax.tick_params(axis="y", labelsize=20 - nX)
+            ax.set_ylabel(f"{gutils.ylabel}", fontsize=25 - geo.nX)
+            ax.tick_params(axis="y", labelsize=20 - geo.nX)
         ax.grid()
-        ax.set_xlim(varxminplot, varxmaxplot / timescale)
-        ax.set_ylim(varyminplot, varymaxplot)
+        ax.set_xlim(gutils.varxminplot, gutils.varxmaxplot / gutils.timescale)
+        ax.set_ylim(gutils.varyminplot, gutils.varymaxplot)
 
 
 # ========================= Slider Callback Update =========================
@@ -182,41 +189,43 @@ def update(val):
     """
     phi = sliders["phi"].val
     if abs(phi) < 1e-6:
-        phi = 1e-6 * np.sign(phi or 1)
+        phi = 1e-6 * geo.np.sign(phi or 1)
 
-    m, q, phi_rad = compute_line_params(phi, sliders["d"].val)
+    m, q, phi_rad = geo.compute_line_params(phi, sliders["d"].val)
 
-    v_x = np.linspace(xleft - xwidth, xleft + (nX + 1) * xwidth, 10 * nX)
-    v_y = np.tan(phi_rad) * v_x + q
+    v_x = geo.np.linspace(
+        geo.xleft - geo.xwidth, geo.xleft + (geo.nX + 1) * geo.xwidth, 10 * geo.nX
+    )
+    v_y = geo.np.tan(phi_rad) * v_x + q
     map_line.set_data(v_x, v_y)
 
-    for iX in range(nX):
-        for iY in range(nY):
-            idx = iX * nY + iY
-            res = Compute1D(
-                t,
+    for iX in range(geo.nX):
+        for iY in range(geo.nY):
+            idx = iX * geo.nY + iY
+            res = mutils.Compute1D(
+                mutils.t,
                 m,
                 q,
-                xleft + iX * xwidth,
-                xleft + (iX + 1) * xwidth,
-                ylow + iY * ywidth,
-                ylow + (iY + 1) * ywidth,
+                geo.xleft + iX * geo.xwidth,
+                geo.xleft + (iX + 1) * geo.xwidth,
+                geo.ylow + iY * geo.ywidth,
+                geo.ylow + (iY + 1) * geo.ywidth,
                 sliders["RC"].val,
                 sliders["z"].val,
-                vartype,
+                gutils.vartype,
             )
             if res is None:
-                res = np.zeros_like(t)
-            sig = scalefactor * res[: t.size]
-            lines[idx][0].set_ydata(sig)
-            texts[idx].set_text(
-                f"{dim} = {np.max(sig):.0f} {unit}\n T$_{{max}}$ = {t[np.argmax(sig)]/timescale:.0f} {timeunit}"
+                res = geo.np.zeros_like(mutils.t)
+            sig = gutils.scalefactor * res[: mutils.t.size]
+            gutils.lines[idx][0].set_ydata(sig)
+            gutils.texts[idx].set_text(
+                f"{gutils.dim} = {geo.np.max(sig):.0f} {gutils.unit}\n T$_{{max}}$ = {mutils.t[geo.np.argmax(sig)]/gutils.timescale:.0f} {gutils.timeunit}"
             )
-    fig.canvas.draw_idle()
+    gutils.fig.canvas.draw_idle()
 
 
 for s in sliders.values():
     s.on_changed(update)
 
 # ========================= Show Plot =========================
-plt.show()
+gutils.plt.show()

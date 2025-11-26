@@ -19,12 +19,13 @@ Tristan DARET
 """
 
 import sys  # pass arguments for parallelization
+import time
+from array import array  # to store the LUT in a TTree
+from typing import List
+
 import numpy as np
 import scipy.special as sc  # for the error function
 from ROOT import TFile, TTree
-from array import array  # to store the LUT in a TTree
-
-import time
 
 # Output file directory (adapt it to your needs)
 out_dir = "LUT/"
@@ -78,12 +79,12 @@ signals. Each function follows NumPy-style docstrings.
 """
 
 
-def Charge(t, m, q, i, j, k, l, RC, drift, Dt):  # fC
+def Charge(t, m, q, xmin, xmax, ymin, ymax, RC, drift, Dt):  # fC
     """Compute integrated charge for a linear (track) deposit on a pad.
 
     This analytic expression integrates the Gaussian-convolved lineic
     charge density over the rectangular pad defined by the coordinates
-    (i, j, k, l).
+    (xmin, xmax, ymin, ymax).
 
     Parameters
     ----------
@@ -91,7 +92,7 @@ def Charge(t, m, q, i, j, k, l, RC, drift, Dt):  # fC
         Time axis in ns.
     m, q : float
         Line parameters describing the track projection (y = m*x + q).
-    i, j, k, l : float
+    xmin, xmax, ymin, ymax : float
         Pad edge coordinates used in the integral.
     RC : float
         RC parameter (ns/mm) controlling transverse spread with time.
@@ -108,22 +109,22 @@ def Charge(t, m, q, i, j, k, l, RC, drift, Dt):  # fC
     sigma = np.sqrt(2 * t / RC + Dt**2 * drift)  # includes transverse diffusion
 
     coeff1 = np.sqrt(2 * (1 + m**2) / np.pi) * sigma
-    term11 = np.exp(-((-k + j * m + q) ** 2) / (2 * (1 + m**2) * sigma**2))
-    term12 = np.exp(-((-k + i * m + q) ** 2) / (2 * (1 + m**2) * sigma**2))
-    term13 = np.exp(-((-l + i * m + q) ** 2) / (2 * (1 + m**2) * sigma**2))
-    term14 = np.exp(-((-l + j * m + q) ** 2) / (2 * (1 + m**2) * sigma**2))
+    term11 = np.exp(-((-ymin + xmax * m + q) ** 2) / (2 * (1 + m**2) * sigma**2))
+    term12 = np.exp(-((-ymin + xmin * m + q) ** 2) / (2 * (1 + m**2) * sigma**2))
+    term13 = np.exp(-((-ymax + xmin * m + q) ** 2) / (2 * (1 + m**2) * sigma**2))
+    term14 = np.exp(-((-ymax + xmax * m + q) ** 2) / (2 * (1 + m**2) * sigma**2))
 
-    term21 = (k - i * m - q) * sc.erf(
-        (-k + i * m + q) / (np.sqrt(2 * (1 + m**2)) * sigma)
+    term21 = (ymin - xmin * m - q) * sc.erf(
+        (-ymin + xmin * m + q) / (np.sqrt(2 * (1 + m**2)) * sigma)
     )
-    term22 = (l - i * m - q) * sc.erf(
-        (-l + i * m + q) / (np.sqrt(2 * (1 + m**2)) * sigma)
+    term22 = (ymax - xmin * m - q) * sc.erf(
+        (-ymax + xmin * m + q) / (np.sqrt(2 * (1 + m**2)) * sigma)
     )
-    term23 = (k - j * m - q) * sc.erf(
-        (-k + j * m + q) / (np.sqrt(2 * (1 + m**2)) * sigma)
+    term23 = (ymin - xmax * m - q) * sc.erf(
+        (-ymin + xmax * m + q) / (np.sqrt(2 * (1 + m**2)) * sigma)
     )
-    term24 = (l - j * m - q) * sc.erf(
-        (-l + j * m + q) / (np.sqrt(2 * (1 + m**2)) * sigma)
+    term24 = (ymax - xmax * m - q) * sc.erf(
+        (-ymax + xmax * m + q) / (np.sqrt(2 * (1 + m**2)) * sigma)
     )
     return (
         np.sqrt(1 + m**2)
@@ -335,8 +336,8 @@ for phi in v_phi:
 
     for d in v_d:
         # Determine the length of the track across the central pad
-        x = []
-        y = []
+        x: List[float] = []
+        y: List[float] = []
 
         y_xmin = Y(phi_rad, d, xmin)
         y_xmax = Y(phi_rad, d, xmax)

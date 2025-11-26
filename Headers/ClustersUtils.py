@@ -12,10 +12,11 @@ functions from `ModelUtils`.
 from sys import path
 
 path.append("Headers/")
-from ModelUtils import *
-from GeometryUtils import *
+import GeometryUtils as geo
 import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider, Button
+import ModelUtils as mu
+import numpy as np
+from matplotlib.widgets import Button, Slider
 
 plt.rcParams.update(
     {
@@ -41,7 +42,7 @@ slider_defs = {
         label="RC\n[ns/mm$^{2}$]",
         valmin=1,
         valmax=250,
-        valinit=RC,
+        valinit=mu.RC,
         step=1,
         color="C4",
     ),
@@ -50,7 +51,7 @@ slider_defs = {
         label="Drift\n[mm]",
         valmin=0,
         valmax=1000,
-        valinit=z,
+        valinit=mu.z,
         step=1,
         color="C4",
     ),
@@ -66,8 +67,8 @@ slider_defs = {
     "d": dict(
         ax=[left2, low2, 0.025, dySlider],
         label="impact\n[mm]",
-        valmin=-diag / 2,
-        valmax=diag / 2,
+        valmin=-geo.diag / 2,
+        valmax=geo.diag / 2,
         valinit=0,
         step=0.1,
         color="C1",
@@ -96,14 +97,14 @@ button = Button(resetax, "Reset", hovercolor="0.975")
 button.on_clicked(lambda event: [s.reset() for s in sliders.values()])
 
 # ========================= Map =========================
-m, q, phi_rad = compute_line_params(sliders["phi"].val, sliders["d"].val)
+m, q, phi_rad = geo.compute_line_params(sliders["phi"].val, sliders["d"].val)
 
 axMap = fig.add_axes((0.06, 0.82, 0.11, 0.12))
-axMap.set_xlim(xleft, xleft + nX * xwidth)
-axMap.set_ylim(ylow, ylow + nY * ywidth)
+axMap.set_xlim(geo.xleft, geo.xleft + geo.nX * geo.xwidth)
+axMap.set_ylim(geo.ylow, geo.ylow + geo.nY * geo.ywidth)
 axMap.set_title("Track position", fontsize=20)
-axMap.set_xticks(np.arange(xleft, xleft + nX * xwidth, xwidth))
-axMap.set_yticks(np.arange(ylow, ylow + nY * ywidth, ywidth))
+axMap.set_xticks(np.arange(geo.xleft, geo.xleft + geo.nX * geo.xwidth, geo.xwidth))
+axMap.set_yticks(np.arange(geo.ylow, geo.ylow + geo.nY * geo.ywidth, geo.ywidth))
 axMap.tick_params(
     which="both",
     labelleft=False,
@@ -116,10 +117,11 @@ axMap.tick_params(
 axMap.grid()
 
 v_points = np.linspace(-6, 10, 50)
+(def_xc, def_yc) = (geo.xc, geo.yc)
 x_line = (
-    np.cos(phi_rad) ** 2 * xc + np.cos(phi_rad) * np.sin(phi_rad) * yc
-) * v_points + xc
+    np.cos(phi_rad) ** 2 * def_xc + np.cos(phi_rad) * np.sin(phi_rad) * def_yc
+) * v_points + def_xc
 y_line = (
-    np.sin(phi_rad) ** 2 * yc + np.cos(phi_rad) * np.sin(phi_rad) * xc
-) * v_points + yc
+    np.sin(phi_rad) ** 2 * def_yc + np.cos(phi_rad) * np.sin(phi_rad) * def_xc
+) * v_points + def_yc
 (map_line,) = axMap.plot(x_line, y_line, "red")

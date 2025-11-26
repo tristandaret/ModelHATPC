@@ -6,19 +6,21 @@ ROOT file with a TTree for easy downstream access. The code was used to
 generate LUTs matching the HATPC geometry.
 """
 
-from sys import path
-
-path.append("Headers/")
-from ModelUtils import *
 import time
-from ROOT import TFile, TTree
 from array import array
+from typing import List
+
+import numpy as np
+from ROOT import TFile, TTree
+
+from Headers import GeometryUtils as geo
+from Headers import ModelUtils as mu
 
 start_time = time.time()
 # Heatmaps --------------------------------------------------------------------------------------------
 t = np.linspace(1, 1000, 250)  # ns | start at 1 to avoid sigma = 0
 # Computations
-ETF = lambdaG * ETF(t)
+ETF = mu.lambdaG * mu.ETF(t)
 nphi = 250
 nd = 250
 nZ = 101
@@ -26,7 +28,7 @@ nZ = 101
 arr_r = np.full((nd, nphi), np.nan)
 v_Dt = [310, 350]
 v_RC = [112, 158]
-v_d = np.linspace(0, diag / 2, nd)
+v_d = np.linspace(0, geo.diag / 2, nd)
 v_phi = np.linspace(0, 90, nphi)
 v_Z = np.linspace(0, 1000, nZ)
 
@@ -54,29 +56,29 @@ for phi in v_phi:
     for d in v_d:
 
         # Determine the length of the track across the central pad
-        x = []
-        y = []
+        x: List[float] = []
+        y: List[float] = []
 
-        y_xmin = Y(phi_rad, d, xmin)
-        y_xmax = Y(phi_rad, d, xmax)
-        x_ymin = X(phi_rad, d, ymin)
-        x_ymax = X(phi_rad, d, ymax)
+        y_xmin = geo.Y(phi_rad, d, geo.xmin)
+        y_xmax = geo.Y(phi_rad, d, geo.xmax)
+        x_ymin = geo.X(phi_rad, d, geo.ymin)
+        x_ymax = geo.X(phi_rad, d, geo.ymax)
 
-        if ymin <= y_xmin < ymax:
-            x.append(xmin)
+        if geo.ymin <= y_xmin < geo.ymax:
+            x.append(geo.xmin)
             y.append(y_xmin)
 
-        if ymin <= y_xmax < ymax:
-            x.append(xmax)
+        if geo.ymin <= y_xmax < geo.ymax:
+            x.append(geo.xmax)
             y.append(y_xmax)
 
-        if xmin <= x_ymin < xmax:
+        if geo.xmin <= x_ymin < geo.xmax:
             x.append(x_ymin)
-            y.append(ymin)
+            y.append(geo.ymin)
 
-        if xmin <= x_ymax < xmax:
+        if geo.xmin <= x_ymax < geo.xmax:
             x.append(x_ymax)
-            y.append(ymax)
+            y.append(geo.ymax)
 
         L = 0
         if len(x) == 2:
@@ -118,21 +120,23 @@ for Dt in v_Dt:
                     # print(f"d = {d:.2f} mm")
                     d_array[0] = d
                     m = np.tan(phi_rad)  # slope
-                    q = (np.cos(phi_rad) * yc - np.sin(phi_rad) * xc + d) / np.cos(
+                    q = (
+                        np.cos(phi_rad) * geo.yc - np.sin(phi_rad) * geo.xc + d
+                    ) / np.cos(
                         phi_rad
                     )  # intercept
 
                     ETFr = arr_r[d_index, phi_index] * np.max(ETF)
 
                     ADC = np.max(
-                        Signal1D(
+                        mu.Signal1D(
                             t,
                             m,
                             q,
-                            xmin,
-                            xmax,
-                            ymin,
-                            ymax,
+                            geo.xmin,
+                            geo.xmax,
+                            geo.ymin,
+                            geo.ymax,
                             RC,
                             z,
                             Dt / np.power(10, 7 / 2),

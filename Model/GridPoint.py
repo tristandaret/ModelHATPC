@@ -29,16 +29,17 @@ Notes
 from sys import path
 
 path.append("Headers/")
-from ModelUtils import *
-from GridUtils import *
+import GeometryUtils as geo
+import GridUtils as gu
+import ModelUtils as mu
 from matplotlib.widgets import Slider
 
 # Update axes range values
-if vartype == "Charge":
-    varymaxplot = 60
-if vartype == "Signal":
-    varymaxplot = 2000
-    varyminplot = -500
+if gu.vartype == "Charge":
+    gu.varymaxplot = 60
+if gu.vartype == "Signal":
+    gu.varymaxplot = 2000
+    gu.varyminplot = -500
 
 
 # ========================= Sliders Setup =========================
@@ -54,7 +55,7 @@ slider_defs = {
         label="RC\n[ns/mm$^{2}$]",
         valmin=1,
         valmax=250,
-        valinit=RC,
+        valinit=mu.RC,
         step=1,
         color="C4",
     ),
@@ -70,26 +71,26 @@ slider_defs = {
     "x": dict(
         ax=[left1, low2, 0.025, dySlider],
         label="x [mm]",
-        valmin=-xwidth / 2,
-        valmax=xwidth / 2,
+        valmin=-geo.xwidth / 2,
+        valmax=geo.xwidth / 2,
         valinit=0,
         step=0.01,
-        color=varcolor,
+        color=gu.varcolor,
     ),
     "y": dict(
         ax=[left2, low2, 0.025, dySlider],
         label="y [mm]",
-        valmin=-ywidth / 2,
-        valmax=ywidth / 2,
+        valmin=-geo.ywidth / 2,
+        valmax=geo.ywidth / 2,
         valinit=0,
         step=0.01,
-        color=varcolor,
+        color=gu.varcolor,
     ),
 }
 
 sliders = {}
 for key, cfg in slider_defs.items():
-    ax = plt.axes(cfg["ax"])
+    ax = gu.plt.axes(cfg["ax"])
     sliders[key] = Slider(
         ax=ax,
         label=cfg["label"],
@@ -104,17 +105,17 @@ for key, cfg in slider_defs.items():
     sliders[key].valtext.set_fontsize(20)
 
 # Reset button
-button.on_clicked(lambda event: [s.reset() for s in sliders.values()])
+gu.button.on_clicked(lambda event: [s.reset() for s in sliders.values()])
 
 
 # ========================= Map Plot Setup =========================
 
-axMap = fig.add_axes((0.035, 0.82, 0.085, 0.12))
-axMap.set_xlim(xleft, xleft + nX * xwidth)
-axMap.set_ylim(ylow, ylow + nY * ywidth)
+axMap = gu.fig.add_axes((0.035, 0.82, 0.085, 0.12))
+axMap.set_xlim(geo.xleft, geo.xleft + geo.nX * geo.xwidth)
+axMap.set_ylim(geo.ylow, geo.ylow + geo.nY * geo.ywidth)
 axMap.set_title("Drop position", fontsize=15)
-axMap.set_xticks(np.arange(xleft, xleft + nX * xwidth, xwidth))
-axMap.set_yticks(np.arange(ylow, ylow + nY * ywidth, ywidth))
+axMap.set_xticks(geo.np.arange(geo.xleft, geo.xleft + geo.nX * geo.xwidth, geo.xwidth))
+axMap.set_yticks(geo.np.arange(geo.ylow, geo.ylow + geo.nY * geo.ywidth, geo.ywidth))
 axMap.tick_params(
     which="both",
     labelleft=False,
@@ -127,48 +128,59 @@ axMap.tick_params(
 axMap.grid()
 
 # First values
-x0 = sliders["x"].val + xc
-y0 = sliders["y"].val + yc
+x0 = sliders["x"].val + geo.xc
+y0 = sliders["y"].val + geo.yc
 
-dropmarker = Dt * sliders["z"].val / 100 * 15 + 10  # marker size for drop point
+dropmarker = mu.Dt * sliders["z"].val / 100 * 15 + 10  # marker size for drop point
 (drop_point,) = axMap.plot(x0, y0, "o", color="red", markersize=dropmarker)
 
 # ========================= Subplots Initialization =========================
-for iX in range(nX):
-    for iY in range(nY):
-        ax = axs[nY - 1 - iY, iX]
-        xL = xleft + iX * xwidth
-        xR = xL + xwidth
-        yB = ylow + iY * ywidth
-        yT = yB + ywidth
-        res = Compute0D(t, x0, y0, xL, xR, yB, yT, sliders["RC"].val, sliders["z"].val, vartype)
+for iX in range(geo.nX):
+    for iY in range(geo.nY):
+        ax = gu.axs[geo.nY - 1 - iY, iX]
+        xL = geo.xleft + iX * geo.xwidth
+        xR = xL + geo.xwidth
+        yB = geo.ylow + iY * geo.ywidth
+        yT = yB + geo.ywidth
+        res = mu.Compute0D(
+            mu.t,
+            x0,
+            y0,
+            xL,
+            xR,
+            yB,
+            yT,
+            sliders["RC"].val,
+            sliders["z"].val,
+            gu.vartype,
+        )
         if res is None:
-            res = np.zeros_like(t)
-        sig = scalefactor * res[: t.size]
-        l = ax.plot(t / timescale, sig, lw=8 - nY, color=varcolor)
+            res = geo.np.zeros_like(mu.t)
+        sig = gu.scalefactor * res[: mu.t.size]
+        line = ax.plot(mu.t / gu.timescale, sig, lw=8 - geo.nY, color=gu.varcolor)
         txt = ax.text(
             0.96,
             0.93,
-            f"{dim} = {np.max(sig):.0f} {unit}\n T$_{{max}}$ = {t[np.argmax(sig)]/timescale:.0f} {timeunit}",
+            f"{gu.dim} = {geo.np.max(sig):.0f} {gu.unit}\n T$_{{max}}$ = {mu.t[geo.np.argmax(sig)]/gu.timescale:.0f} {gu.timeunit}",
             ha="right",
             va="top",
             transform=ax.transAxes,
-            fontsize=23 - 2 * nY,
-            bbox=dict(boxstyle="round", facecolor=varcolor),
-            color=varforeground,
+            fontsize=23 - 2 * geo.nY,
+            bbox=dict(boxstyle="round", facecolor=gu.varcolor),
+            color=gu.varforeground,
         )
-        lines.append(l)
-        texts.append(txt)
+        gu.lines.append(line)
+        gu.texts.append(txt)
 
         if iY == 0:
-            ax.set_xlabel(f"Time ({timeunit})", fontsize=25 - nY)
-            ax.tick_params(axis="x", labelsize=20 - nY)
+            ax.set_xlabel(f"Time ({gu.timeunit})", fontsize=25 - geo.nY)
+            ax.tick_params(axis="x", labelsize=20 - geo.nY)
         if iX == 0:
-            ax.set_ylabel(f"{ylabel}", fontsize=25 - nX)
-            ax.tick_params(axis="y", labelsize=20 - nX)
+            ax.set_ylabel(f"{gu.ylabel}", fontsize=25 - geo.nX)
+            ax.tick_params(axis="y", labelsize=20 - geo.nX)
         ax.grid()
-        ax.set_xlim(varxminplot, varxmaxplot / timescale)
-        ax.set_ylim(varyminplot, varymaxplot)
+        ax.set_xlim(gu.varxminplot, gu.varxmaxplot / gu.timescale)
+        ax.set_ylim(gu.varyminplot, gu.varymaxplot)
 
 
 # ========================= Slider Callback Update =========================
@@ -189,42 +201,42 @@ def update(val):
       y-data of the plotted lines and summary text boxes.
     - Forces the figure canvas to redraw.
     """
-    x0 = sliders["x"].val + xc
-    y0 = sliders["y"].val + yc
+    x0 = sliders["x"].val + geo.xc
+    y0 = sliders["y"].val + geo.yc
     drop_point.set_data([x0], [y0])
-    drop_point.set_markersize(Dt * sliders["z"].val / 5 + 10)  # Update marker size
+    drop_point.set_markersize(mu.Dt * sliders["z"].val / 5 + 10)  # Update marker size
 
-    for iX in range(nX):
-        for iY in range(nY):
-            idx = iX * nY + iY
-            xL = xleft + iX * xwidth
-            xR = xL + xwidth
-            yB = ylow + iY * ywidth
-            yT = yB + ywidth
-            res = Compute0D(
-                    t,
-                    x0,
-                    y0,
-                    xL,
-                    xR,
-                    yB,
-                    yT,
-                    sliders["RC"].val,
-                    sliders["z"].val,
-                    vartype,
-                )
-            if res is None:
-                res = np.zeros_like(t)
-            sig = scalefactor * res[: t.size]
-            lines[idx][0].set_ydata(sig)
-            texts[idx].set_text(
-                f"{dim} = {np.max(sig):.0f} {unit}\n T$_{{max}}$ = {t[np.argmax(sig)]/timescale:.0f} {timeunit}"
+    for iX in range(geo.nX):
+        for iY in range(geo.nY):
+            idx = iX * geo.nY + iY
+            xL = geo.xleft + iX * geo.xwidth
+            xR = xL + geo.xwidth
+            yB = geo.ylow + iY * geo.ywidth
+            yT = yB + geo.ywidth
+            res = mu.Compute0D(
+                mu.t,
+                x0,
+                y0,
+                xL,
+                xR,
+                yB,
+                yT,
+                sliders["RC"].val,
+                sliders["z"].val,
+                gu.vartype,
             )
-    fig.canvas.draw_idle()
+            if res is None:
+                res = geo.np.zeros_like(mu.t)
+            sig = gu.scalefactor * res[: mu.t.size]
+            gu.lines[idx][0].set_ydata(sig)
+            gu.texts[idx].set_text(
+                f"{gu.dim} = {geo.np.max(sig):.0f} {gu.unit}\n T$_{{max}}$ = {mu.t[geo.np.argmax(sig)]/gu.timescale:.0f} {gu.timeunit}"
+            )
+    gu.fig.canvas.draw_idle()
 
 
 for s in sliders.values():
     s.on_changed(update)
 
 # ========================= Show Plot =========================
-plt.show()
+gu.plt.show()

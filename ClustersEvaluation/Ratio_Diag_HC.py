@@ -10,12 +10,12 @@ Note: the script can be computationally intensive depending on the grid
 resolution (`nsteps`) and the number of tracks considered.
 """
 
-from sys import path
-
-path.append("Headers/")
-from ModelUtils import *
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
+
+from Headers import GeometryUtils as geo
+from Headers import ModelUtils as mu
 
 # Plotting style with LaTeX
 plt.rcParams.update({"text.usetex": True, "font.family": "serif", "font.size": 35})
@@ -23,12 +23,13 @@ plt.rcParams.update({"text.usetex": True, "font.family": "serif", "font.size": 3
 
 # Computations
 nsteps = 250
-RC = 120  # Readout chip radius in mm
-z = 250  # Distance from the readout chip to the sensor in mm
-ETF_peak = lambdaG * max_ETF
+# use constants from ModelUtils when appropriate
+RC = mu.RC  # Readout chip radius (from model defaults)
+z = mu.z  # Distance from the readout chip to the sensor
+ETF_peak = mu.lambdaG * mu.max_ETF
 nd = nsteps
 nphi = nsteps
-v_d = np.linspace(0, diag / 2, nd)
+v_d = np.linspace(0, geo.diag / 2, nd)
 v_phi = np.linspace(1e-6, 90 - 1e-6, nphi)
 print("v_phi elements:", v_phi)
 arr_lead = np.full((nd, nphi), np.nan)
@@ -48,46 +49,46 @@ for phi in v_phi:
     print(f"phi = {phi:.1f}°")
     d_index = 0
     for d in v_d:
-        m, q, phi_rad = compute_line_params(phi, d)
+        m, q, phi_rad = geo.compute_line_params(phi, d)
 
         # Determine the cluster lengths
-        r_diag, r_vert, r_cros, L = ClusterLengths(phi_rad, d)
+        r_diag, r_vert, r_cros, L = geo.ClusterLengths(phi_rad, d)
 
         ETF_lead = r_diag * ETF_peak
         ETF_diag = r_diag * ETF_peak
         ETF_cros = r_cros * ETF_peak
         ETF_vert = r_vert * ETF_peak
-        Lead_only = np.zeros(t.size)
-        Clus_Diag = np.zeros(t.size)
-        Clus_HC = np.zeros(t.size)
-        Clus_vert = np.zeros(t.size)
-        for iX in range(nX):
-            for iY in range(nY):
-                ADC = Signal1D(
-                    t,
+        Lead_only = np.zeros(mu.t.size)
+        Clus_Diag = np.zeros(mu.t.size)
+        Clus_HC = np.zeros(mu.t.size)
+        Clus_vert = np.zeros(mu.t.size)
+        for iX in range(geo.nX):
+            for iY in range(geo.nY):
+                ADC = mu.Signal1D(
+                    mu.t,
                     m,
                     q,
-                    xleft + iX * xwidth,
-                    xleft + (iX + 1) * xwidth,
-                    ylow + iY * ywidth,
-                    ylow + (iY + 1) * ywidth,
+                    geo.xleft + iX * geo.xwidth,
+                    geo.xleft + (iX + 1) * geo.xwidth,
+                    geo.ylow + iY * geo.ywidth,
+                    geo.ylow + (iY + 1) * geo.ywidth,
                     RC,
                     z,
-                )[: len(t)]
+                )[: len(mu.t)]
                 # Leading pad only
-                if iX == nX // 2 and iY == nY // 2:
+                if iX == geo.nX // 2 and iY == geo.nY // 2:
                     Lead_only += ADC
                 # Cluster distributions
                 # Diagonal distribution
-                if iX + iY == nX // 2 + nY // 2:
+                if iX + iY == geo.nX // 2 + geo.nY // 2:
                     Clus_Diag += ADC
                 # Half-cross distribution
-                if (iX >= nX // 2 and iY == nY // 2) or (
-                    iX == nX // 2 and iY >= nY // 2
+                if (iX >= geo.nX // 2 and iY == geo.nY // 2) or (
+                    iX == geo.nX // 2 and iY >= geo.nY // 2
                 ):
                     Clus_HC += ADC
                 # Vertical distribution
-                if iX == nX // 2:
+                if iX == geo.nX // 2:
                     Clus_vert += ADC
 
         # Cluster distributions (r_diag cuts on length in leading pad as a common benchmark)
@@ -115,10 +116,10 @@ list_global = list_cros + list_diag + list_vert
 
 # Draw the plots
 with PdfPages(
-    f"Illustrations/Ratio_Diag_HC_nphi{nphi:d}_nd{nd:d}_RC{RC:d}_z{z:d}_PT{PT:d}_Dt{Dt*np.power(10,7/2):.0f}_2mm_30phi60_nX{nX:d}_nY{nY:d}.pdf"
+    f"Illustrations/Ratio_Diag_HC_nphi{nphi:d}_nd{nd:d}_RC{RC:d}_z{z:d}_PT{mu.PT:d}_Dt{mu.Dt*np.power(10, 7/2):.0f}_2mm_30phi60_geo.nX{geo.nX:d}_geo.nY{geo.nY:d}.pdf"
 ) as pdf:
 
-    ### Diagonal heatmap ###
+    # Diagonal heatmap #
     plt.figure(figsize=(15, 10))
     plt.imshow(
         arr_diag,
@@ -135,7 +136,7 @@ with PdfPages(
     pdf.savefig(bbox_inches="tight")
     plt.clf()
 
-    ### Distribution of cluster accuracy ###
+    # Distribution of cluster accuracy #
     plt.grid()
     ax = plt.gca()
     plt.xlabel(r"$A_{true}/A_{diagonal}$")
@@ -227,7 +228,7 @@ with PdfPages(
     pdf.savefig(bbox_inches="tight")
     plt.clf()
 
-    ####################### Half-cross heatmap ############################
+    # Half-cross heatmap #
     plt.imshow(
         arr_cros,
         cmap="viridis",
@@ -243,7 +244,7 @@ with PdfPages(
     pdf.savefig(bbox_inches="tight")
     plt.clf()
 
-    ### Distribution of cluster accuracy ###
+    # Distribution of cluster accuracy #
     plt.grid()
     ax = plt.gca()
     plt.xlabel(r"$A_{true}/A_{half-cross}$")
@@ -335,7 +336,7 @@ with PdfPages(
     pdf.savefig(bbox_inches="tight")
     plt.clf()
 
-    ####################### Vertical heatmap ############################
+    # Vertical heatmap #
     plt.imshow(
         arr_vert,
         cmap="viridis",
@@ -351,7 +352,7 @@ with PdfPages(
     pdf.savefig(bbox_inches="tight")
     plt.clf()
 
-    ### Distribution of cluster accuracy ###
+    # Distribution of cluster accuracy #
     plt.grid()
     ax = plt.gca()
     plt.xlabel(r"$A_{true}/A_{vertical}$")
@@ -444,7 +445,7 @@ with PdfPages(
     pdf.savefig(bbox_inches="tight")
     plt.clf()
 
-    ####################### Leading Pad heatmap ############################
+    # Leading Pad heatmap #
     plt.imshow(
         arr_lead,
         cmap="viridis",

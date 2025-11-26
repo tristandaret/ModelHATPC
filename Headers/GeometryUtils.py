@@ -29,11 +29,7 @@ Functions
 
 import numpy as np
 
-
-##### GEOMETRY SETTINGS ######
-
-
-### GEOMETRY PARAMETERS ###
+# GEOMETRY PARAMETERS #
 nX = 3  # number of columns
 xwidth = 11.28  # mm ; width of xmin pad
 xc = xwidth / 2  # mm ; horizontal center of pad
@@ -53,7 +49,7 @@ ymax = ywidth  # mm ; right border of leading pad
 diag = np.sqrt(xwidth**2 + ywidth**2)
 
 
-#### GEOMETRY FUNCTIONS ####
+# GEOMETRY FUNCTIONS #
 
 
 def X(phi_rad, d, y):

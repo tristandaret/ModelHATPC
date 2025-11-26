@@ -22,4 +22,4 @@ __all__ = [
 
 # Ensure the names listed in __all__ are present in the package namespace.
 # Importing the submodules makes them available as attributes of the package.
-from . import ModelUtils, GridUtils, GeometryUtils, ClustersUtils
+from . import ClustersUtils, GeometryUtils, GridUtils, ModelUtils

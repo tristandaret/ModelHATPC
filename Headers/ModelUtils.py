@@ -19,11 +19,6 @@ import numpy as np
 import scipy.special as sc
 from scipy import signal
 
-from sys import path
-
-path.append("Headers/")
-from GeometryUtils import *
-
 # Units: ns mm fC ---------------------------------------------------------------------------------------------------------------
 # physics variables
 t = np.linspace(0, 3000, 500)  # ns | start at 1 to avoid sigma = 0

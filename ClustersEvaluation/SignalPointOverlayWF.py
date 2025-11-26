@@ -6,40 +6,65 @@ to visualise how charge spreads to neighbors and to validate the summed
 response against a no-diffusion reference.
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
-from sys import path
+# Explicit Headers imports
+import sys
 
-path.append("Headers/")
-from ModelUtils import *
+import matplotlib.pyplot as plt
+import numpy as np
+
+sys.path.append("Headers/")
+import GeometryUtils as geo
+import ModelUtils as mu
 
 plt.rcParams.update({"text.usetex": True, "font.family": "serif", "font.size": 35})
 
 
 # Computations punctual WFs --------------------------------------------------------------------------------------------------
-xdrop = xleft + xc + nX // 2 * xwidth + 2
-ydrop = ylow + yc + nY // 2 * ywidth
+xdrop = geo.xleft + geo.xc + geo.nX // 2 * geo.xwidth
+ydrop = geo.ylow + geo.yc + geo.nY // 2 * geo.ywidth
 z = 0
 
 # Create an array to store the results
-signal_results = np.zeros((nX, nY, len(t)))
+signal_results = np.zeros((geo.nX, geo.nY, len(mu.t)))
 
 # Create the object to store the sum of all signals
-SumSignal = np.zeros(len(t))
+SumSignal = np.zeros(len(mu.t))
 SignalRCinf = (
-    Signal0D(t, xdrop, ydrop, xmin, xmax, ymin, ymax, 1e8, z)[: len(t)] * Ne / Ne55Fe
+    mu.Signal0D(
+        mu.t,
+        xdrop,
+        ydrop,
+        geo.xleft,
+        geo.xleft + geo.nX * geo.xwidth,
+        geo.ylow,
+        geo.ylow + geo.nY * geo.ywidth,
+        1e8,
+        z,
+    )[: len(mu.t)]
+    * mu.Ne
+    / mu.Ne55Fe
 )
 
-for iX in range(nX):
-    for iY in range(nY):
-        xmin = xleft + iX * xwidth
-        xmax = xmin + xwidth
-        ymin = ylow + iY * ywidth
-        ymax = ymin + ywidth
+for iX in range(geo.nX):
+    for iY in range(geo.nY):
+        xmin = geo.xleft + iX * geo.xwidth
+        xmax = xmin + geo.xwidth
+        ymin = geo.ylow + iY * geo.ywidth
+        ymax = ymin + geo.ywidth
+        xmin = geo.xleft + iX * geo.xwidth
+        xmax = xmin + geo.xwidth
+        ymin = geo.ylow + iY * geo.ywidth
+        ymax = ymin + geo.ywidth
+        xmin = geo.xleft + iX * geo.xwidth
+        xmax = xmin + geo.xwidth
+        ymin = geo.ylow + iY * geo.ywidth
+        ymax = ymin + geo.ywidth
         convo0D = (
-            Signal0D(t, xdrop, ydrop, xmin, xmax, ymin, ymax, RC, z)[: len(t)]
-            * Ne
-            / Ne55Fe
+            mu.Signal0D(mu.t, xdrop, ydrop, xmin, xmax, ymin, ymax, mu.RC, z)[
+                : len(mu.t)
+            ]
+            * mu.Ne
+            / mu.Ne55Fe
         )
         signal_results[iX, iY, :] = convo0D
         SumSignal += convo0D
@@ -49,10 +74,10 @@ for iX in range(nX):
 fig, ax1 = plt.subplots(figsize=(12, 9))
 plt.subplots_adjust(left=0.15, right=0.96, bottom=0.13, top=0.98)
 
-ax1.plot(t, SignalRCinf, color="black", lw=3, label="No diffusion case")
+ax1.plot(mu.t, SignalRCinf, color="black", lw=3, label="No diffusion case")
 
 ax1.set_ylabel("Signal [ADC counts]")
-ax1.set_xlim(0, t[-1])
+ax1.set_xlim(0, mu.t[-1])
 ax1.set_xlabel("Time (ns)", labelpad=10)
 ax1.tick_params(axis="x")
 ax1.tick_params(axis="y")
