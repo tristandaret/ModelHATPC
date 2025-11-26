@@ -109,7 +109,7 @@ button.on_clicked(lambda event: [s.reset() for s in sliders.values()])
 
 # ========================= Map Plot Setup =========================
 
-axMap = fig.add_axes([0.035, 0.82, 0.085, 0.12])
+axMap = fig.add_axes((0.035, 0.82, 0.085, 0.12))
 axMap.set_xlim(xleft, xleft + nX * xwidth)
 axMap.set_ylim(ylow, ylow + nY * ywidth)
 axMap.set_title("Drop position", fontsize=15)
@@ -141,12 +141,10 @@ for iX in range(nX):
         xR = xL + xwidth
         yB = ylow + iY * ywidth
         yT = yB + ywidth
-        sig = (
-            scalefactor
-            * Compute0D(
-                t, x0, y0, xL, xR, yB, yT, sliders["RC"].val, sliders["z"].val, vartype
-            )[: t.size]
-        )
+        res = Compute0D(t, x0, y0, xL, xR, yB, yT, sliders["RC"].val, sliders["z"].val, vartype)
+        if res is None:
+            res = np.zeros_like(t)
+        sig = scalefactor * res[: t.size]
         l = ax.plot(t / timescale, sig, lw=8 - nY, color=varcolor)
         txt = ax.text(
             0.96,
@@ -203,9 +201,7 @@ def update(val):
             xR = xL + xwidth
             yB = ylow + iY * ywidth
             yT = yB + ywidth
-            sig = (
-                scalefactor
-                * Compute0D(
+            res = Compute0D(
                     t,
                     x0,
                     y0,
@@ -216,8 +212,10 @@ def update(val):
                     sliders["RC"].val,
                     sliders["z"].val,
                     vartype,
-                )[: t.size]
-            )
+                )
+            if res is None:
+                res = np.zeros_like(t)
+            sig = scalefactor * res[: t.size]
             lines[idx][0].set_ydata(sig)
             texts[idx].set_text(
                 f"{dim} = {np.max(sig):.0f} {unit}\n T$_{{max}}$ = {t[np.argmax(sig)]/timescale:.0f} {timeunit}"

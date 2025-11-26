@@ -25,7 +25,7 @@ plt.rcParams.update({"text.usetex": True, "font.family": "serif", "font.size": 3
 nsteps = 250
 RC = 120  # Readout chip radius in mm
 z = 250  # Distance from the readout chip to the sensor in mm
-ETF = lambdaG * ETF(t)
+ETF_peak = lambdaG * max_ETF
 nd = nsteps
 nphi = nsteps
 v_d = np.linspace(0, diag / 2, nd)
@@ -53,10 +53,10 @@ for phi in v_phi:
         # Determine the cluster lengths
         r_diag, r_vert, r_cros, L = ClusterLengths(phi_rad, d)
 
-        ETF_lead = r_diag * np.max(ETF)
-        ETF_diag = r_diag * np.max(ETF)
-        ETF_cros = r_cros * np.max(ETF)
-        ETF_vert = r_vert * np.max(ETF)
+        ETF_lead = r_diag * ETF_peak
+        ETF_diag = r_diag * ETF_peak
+        ETF_cros = r_cros * ETF_peak
+        ETF_vert = r_vert * ETF_peak
         Lead_only = np.zeros(t.size)
         Clus_Diag = np.zeros(t.size)
         Clus_HC = np.zeros(t.size)
@@ -125,7 +125,7 @@ with PdfPages(
         cmap="viridis",
         origin="lower",
         aspect="auto",
-        extent=[v_phi[0], v_phi[-1], v_d[0], v_d[-1]],
+        extent=(float(v_phi[0]), float(v_phi[-1]), float(v_d[0]), float(v_d[-1])),
     )
     cbar = plt.colorbar(pad=0.01, fraction=0.08)
     plt.clim(0, np.max(list_global))
@@ -143,7 +143,7 @@ with PdfPages(
     plt.hist(
         list_diag,
         bins=50,
-        range=[0, np.max(list_global)],
+        range=(0, np.max(list_global)),
         color="blue",
         histtype="stepfilled",
         alpha=0.3,
@@ -152,7 +152,7 @@ with PdfPages(
     plt.hist(
         list_diag,
         bins=50,
-        range=[0, np.max(list_global)],
+        range=(0, np.max(list_global)),
         color="blue",
         histtype="step",
         linewidth=3,
@@ -161,7 +161,7 @@ with PdfPages(
     plt.hist(
         list_diag_cut,
         bins=50,
-        range=[0, np.max(list_global)],
+        range=(0, np.max(list_global)),
         color="red",
         histtype="stepfilled",
         alpha=0.3,
@@ -170,7 +170,7 @@ with PdfPages(
     plt.hist(
         list_diag_cut,
         bins=50,
-        range=[0, np.max(list_global)],
+        range=(0, np.max(list_global)),
         color="red",
         histtype="step",
         linewidth=3,
@@ -233,7 +233,7 @@ with PdfPages(
         cmap="viridis",
         origin="lower",
         aspect="auto",
-        extent=[v_phi[0], v_phi[-1], v_d[0], v_d[-1]],
+        extent=(float(v_phi[0]), float(v_phi[-1]), float(v_d[0]), float(v_d[-1])),
     )
     cbar = plt.colorbar(pad=0.01, fraction=0.08)
     plt.clim(0, np.max(list_global))
@@ -251,7 +251,7 @@ with PdfPages(
     plt.hist(
         list_cros,
         bins=50,
-        range=[0, np.max(list_global)],
+        range=(0, np.max(list_global)),
         color="blue",
         histtype="stepfilled",
         alpha=0.3,
@@ -260,7 +260,7 @@ with PdfPages(
     plt.hist(
         list_cros,
         bins=50,
-        range=[0, np.max(list_global)],
+        range=(0, np.max(list_global)),
         color="blue",
         histtype="step",
         linewidth=3,
@@ -269,7 +269,7 @@ with PdfPages(
     plt.hist(
         list_cros_cut,
         bins=50,
-        range=[0, np.max(list_global)],
+        range=(0, np.max(list_global)),
         color="red",
         histtype="stepfilled",
         alpha=0.3,
@@ -278,7 +278,7 @@ with PdfPages(
     plt.hist(
         list_cros_cut,
         bins=50,
-        range=[0, np.max(list_global)],
+        range=(0, np.max(list_global)),
         color="red",
         histtype="step",
         linewidth=3,
@@ -341,7 +341,7 @@ with PdfPages(
         cmap="viridis",
         origin="lower",
         aspect="auto",
-        extent=[v_phi[0], v_phi[-1], v_d[0], v_d[-1]],
+        extent=(float(v_phi[0]), float(v_phi[-1]), float(v_d[0]), float(v_d[-1])),
     )
     cbar = plt.colorbar(pad=0.01, fraction=0.08)
     plt.clim(0, np.max(list_global))
@@ -360,7 +360,7 @@ with PdfPages(
     plt.hist(
         list_vert,
         bins=nbins,
-        range=[0, 2],
+        range=(0.0, 2.0),
         color="blue",
         histtype="stepfilled",
         alpha=0.3,
@@ -369,7 +369,7 @@ with PdfPages(
     plt.hist(
         list_vert,
         bins=nbins,
-        range=[0, 2],
+        range=(0.0, 2.0),
         color="blue",
         histtype="step",
         linewidth=3,
@@ -378,7 +378,7 @@ with PdfPages(
     plt.hist(
         list_vert_cut,
         bins=nbins,
-        range=[0, 2],
+        range=(0.0, 2.0),
         color="red",
         histtype="stepfilled",
         alpha=0.3,
@@ -387,7 +387,7 @@ with PdfPages(
     plt.hist(
         list_vert_cut,
         bins=nbins,
-        range=[0, 2],
+        range=(0.0, 2.0),
         color="red",
         histtype="step",
         linewidth=3,
@@ -450,7 +450,7 @@ with PdfPages(
         cmap="viridis",
         origin="lower",
         aspect="auto",
-        extent=[v_phi[0], v_phi[-1], v_d[0], v_d[-1]],
+        extent=(float(v_phi[0]), float(v_phi[-1]), float(v_d[0]), float(v_d[-1])),
     )
     cbar = plt.colorbar(pad=0.01, fraction=0.08)
     plt.clim(0, np.max(list_global))

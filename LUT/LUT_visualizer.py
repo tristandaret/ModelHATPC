@@ -93,7 +93,7 @@ plt.imshow(
     cmap="viridis",
     origin="lower",
     aspect="auto",
-    extent=[v_phi[0], v_phi[-1], v_d[0], v_d[-1]],
+    extent=(float(v_phi[0]), float(v_phi[-1]), float(v_d[0]), float(v_d[-1])),
 )
 cbar = plt.colorbar(pad=0.01, fraction=0.08)
 cbar.ax.tick_params(labelsize=20)

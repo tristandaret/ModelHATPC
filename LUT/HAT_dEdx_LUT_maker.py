@@ -298,7 +298,7 @@ start_time = time.time()
 
 # LUT computation ---------------------------------------------------------------------------------------------------------------
 # LUT parameters
-ETF = ETF(t)
+ETF_samples = ETF(t)
 nphi = 25
 nd = 25
 nZ = 51
@@ -392,7 +392,7 @@ for z in v_Z:
                 phi_rad
             )  # intercept
 
-            ETFr = arr_r[d_index, phi_index] * np.max(ETF)
+            ETFr = arr_r[d_index, phi_index] * np.max(ETF_samples)
 
             ADC = np.max(
                 Signal(

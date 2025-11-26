@@ -139,6 +139,12 @@ def ClusterLengths(phi_rad, d):
     r_cros = 0
     L = 0
 
+    # Initialize coordinate variables so static analysis knows they are always defined.
+    x0_eram = x1_eram = y0_eram = y1_eram = 0.0
+    x0_diag = x1_diag = y0_diag = y1_diag = 0.0
+    x0_vert = x1_vert = y0_vert = y1_vert = 0.0
+    x0_cros = x1_cros = y0_cros = y1_cros = 0.0
+
     y_xmin = Y(phi_rad, d, xmin)
     y_xmax = Y(phi_rad, d, xmax)
     y_xleft = Y(phi_rad, d, xleft)

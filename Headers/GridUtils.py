@@ -24,7 +24,7 @@ path.append("Headers/")
 from ModelUtils import *
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button
-
+import warnings
 # ========================= Variable Setup =========================
 # Variable types: Signal, Charge, Current
 vartype = "Signal"
@@ -75,6 +75,23 @@ elif vartype == "Current":
     dim = "I$_{max}$"
     unit = "nA"
     ylabel = "Current (nA)"
+else:
+    # Fallback: ensure all plotting variables are defined and notify the user.
+    warnings.warn(f"Unknown vartype '{vartype}', using default 'Signal' settings.", UserWarning)
+    timescale = 1
+    timeunit = "ns"
+    t = np.linspace(1, 3000, 500)
+    varcolor = "C1"
+    varforeground = "black"
+    varxminplot = 0
+    varxmaxplot = 3000
+    varyminplot = -200
+    varymaxplot = 1000
+    scalefactor = 1
+    dim = "ADC$_{max}$"
+    unit = ""
+    ylabel = "ADC count"
+    ylabel = "Current (nA)"
 
 # ========================= Plot Setup =========================
 fig, axs = plt.subplots(nY, nX, sharex=True, sharey=True, figsize=(12, 9))
@@ -87,6 +104,6 @@ for ax in axs.flat:
 
 
 # ========================= Reset Button Setup =========================
-resetax = fig.add_axes([0.035, 0.05, 0.085, 0.06])
+resetax = fig.add_axes((0.035, 0.05, 0.085, 0.06))
 button = Button(resetax, "Reset", hovercolor="0.975")
 button.label.set_fontsize(20)

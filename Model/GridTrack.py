@@ -98,7 +98,7 @@ button.on_clicked(lambda event: [s.reset() for s in sliders.values()])
 # ========================= Map Plot Setup =========================
 m, q, phi_rad = compute_line_params(sliders["phi"].val, sliders["d"].val)
 
-axMap = fig.add_axes([0.035, 0.82, 0.085, 0.12])
+axMap = fig.add_axes((0.035, 0.82, 0.085, 0.12))
 axMap.set_xlim(xleft, xleft + nX * xwidth)
 axMap.set_ylim(ylow, ylow + nY * ywidth)
 axMap.set_title("Track position", fontsize=20)
@@ -133,7 +133,10 @@ for iX in range(nX):
         x1 = x0 + xwidth
         y0 = ylow + iY * ywidth
         y1 = y0 + ywidth
-        sig = scalefactor * Compute1D(t, m, q, x0, x1, y0, y1, RC, z, vartype)[: t.size]
+        res = Compute1D(t, m, q, x0, x1, y0, y1, RC, z, vartype)
+        if res is None:
+            res = np.zeros_like(t)
+        sig = scalefactor * res[: t.size]
         l = ax.plot(t / timescale, sig, lw=8 - nY, color=varcolor)
         txt = ax.text(
             0.96,
@@ -190,21 +193,21 @@ def update(val):
     for iX in range(nX):
         for iY in range(nY):
             idx = iX * nY + iY
-            sig = (
-                scalefactor
-                * Compute1D(
-                    t,
-                    m,
-                    q,
-                    xleft + iX * xwidth,
-                    xleft + (iX + 1) * xwidth,
-                    ylow + iY * ywidth,
-                    ylow + (iY + 1) * ywidth,
-                    sliders["RC"].val,
-                    sliders["z"].val,
-                    vartype,
-                )[: t.size]
+            res = Compute1D(
+                t,
+                m,
+                q,
+                xleft + iX * xwidth,
+                xleft + (iX + 1) * xwidth,
+                ylow + iY * ywidth,
+                ylow + (iY + 1) * ywidth,
+                sliders["RC"].val,
+                sliders["z"].val,
+                vartype,
             )
+            if res is None:
+                res = np.zeros_like(t)
+            sig = scalefactor * res[: t.size]
             lines[idx][0].set_ydata(sig)
             texts[idx].set_text(
                 f"{dim} = {np.max(sig):.0f} {unit}\n T$_{{max}}$ = {t[np.argmax(sig)]/timescale:.0f} {timeunit}"

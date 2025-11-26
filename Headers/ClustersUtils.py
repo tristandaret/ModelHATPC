@@ -91,14 +91,14 @@ for key, cfg in slider_defs.items():
     sliders[key].valtext.set_fontsize(20)
 
 # ========================= Reset Button =========================
-resetax = fig.add_axes([0.06, 0.05, 0.11, 0.06])
+resetax = fig.add_axes((0.06, 0.05, 0.11, 0.06))
 button = Button(resetax, "Reset", hovercolor="0.975")
 button.on_clicked(lambda event: [s.reset() for s in sliders.values()])
 
 # ========================= Map =========================
 m, q, phi_rad = compute_line_params(sliders["phi"].val, sliders["d"].val)
 
-axMap = fig.add_axes([0.06, 0.82, 0.11, 0.12])
+axMap = fig.add_axes((0.06, 0.82, 0.11, 0.12))
 axMap.set_xlim(xleft, xleft + nX * xwidth)
 axMap.set_ylim(ylow, ylow + nY * ywidth)
 axMap.set_title("Track position", fontsize=20)

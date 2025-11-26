@@ -1,5 +1,3 @@
 numpy
 scipy
 matplotlib
-# Optional (only if you use ROOT-based LUT tools):
-# root_numpy or PyROOT (system-dependent)

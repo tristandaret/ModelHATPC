@@ -50,53 +50,6 @@ fig, ax1 = plt.subplots(figsize=(12, 9))
 plt.subplots_adjust(left=0.15, right=0.96, bottom=0.13, top=0.98)
 
 ax1.plot(t, SignalRCinf, color="black", lw=3, label="No diffusion case")
-# ax1.plot(t, SumSignal, color="C3", lw=3, ls="--", label=r"Sum of 3 $\times$ 3 signals")
-
-# # Central pad
-# ax1.plot(
-#     t,
-#     signal_results[nX // 2, nY // 2, :],
-#     color="C0",
-#     lw=2,
-#     ls="--",
-#     label=f"Central pad",
-# )
-
-# for iX in range(nX):
-#     for iY in range(nY):
-#         #  Vertical neighbors
-#         if iX == 1 and iY != 1:
-#             label = "Vertical neighbors" if (iX == 1 and iY == 0) else None
-#             ax1.plot(
-#                 t,
-#                 signal_results[iX, iY, :],
-#                 color="C1",
-#                 lw=2,
-#                 ls="--",
-#                 label=label,
-#             )
-#         # Lateral neighbors
-#         if iY == 1 and iX != 1:
-#             label = "Lateral neighbors" if (iX == 0 and iY == 1) else None
-#             ax1.plot(
-#                 t,
-#                 signal_results[iX, iY, :],
-#                 color="C2",
-#                 lw=2,
-#                 ls="--",
-#                 label=label,
-#             )
-#         # Corner pads
-#         if (iX == 0 or iX == 2) and (iY == 0 or iY == 2):
-#             label = "Corner neighbors" if (iX == 0 and iY == 0) else None
-#             ax1.plot(
-#                 t,
-#                 signal_results[iX, iY, :],
-#                 color="C4",
-#                 lw=2,
-#                 ls="--",
-#                 label=label,
-#             )
 
 ax1.set_ylabel("Signal [ADC counts]")
 ax1.set_xlim(0, t[-1])
