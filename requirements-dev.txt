@@ -1,0 +1,2 @@
+# Development dependencies for running pre-commit hooks and linters
+pre-commit
