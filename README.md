@@ -41,3 +41,8 @@ Repository layout
 - `Headers/` - helper modules and shared plotting defaults
 - `ClustersEvaluation/`, `LUT/`, `ThesisPlots/` - analysis, LUT generation and
   plotting utilities used during development
+
+LaTeX requirement for plots
+-----------------
+Some figures are rendered using `matplotlib` with `text.usetex=True`.  
+To reproduce the plots, install a LaTeX distribution (e.g. TeX Live) and ensure `latex`, `dvipng`, and `ghostscript` are in the PATH.
