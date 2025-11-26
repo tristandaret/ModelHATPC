@@ -109,6 +109,6 @@ ax1.legend()
 # plt.savefig(f"Illustrations/SignalPointOverlayWF3x3X2mm.pdf", bbox_inches="tight")
 # plt.savefig(f"Illustrations/SignalPointOverlayWF3x3NoSumX2mm.pdf", bbox_inches="tight")
 plt.savefig(
-    f"Illustrations/SignalPointOverlayWF3x3NoDiffusionOnlyX2mm.pdf", bbox_inches="tight"
+    "Illustrations/SignalPointOverlayWF3x3NoDiffusionOnlyX2mm.pdf", bbox_inches="tight"
 )
 plt.show()

@@ -46,6 +46,20 @@ initial_ylim = None
 
 
 def update(val):
+    """Update the plotted traces when sliders change.
+
+    Parameters
+    ----------
+    val : float
+        Slider value passed by Matplotlib (ignored). The function reads
+        current slider values from the global `sliders` dictionary and
+        recomputes per-pad/cluster traces for the projected track.
+
+    Side effects
+    -----------
+    - Updates the map line, per-line `y` data and legend.
+    - Sets the initial y-limits on first call and triggers a redraw.
+    """
     phi_val = max(sliders["phi"].val, 1e-6)
     m, q, phi_rad = compute_line_params(phi_val, sliders["d"].val)
     Ldiag, Lvert, Lcros, Ltotal = ClusterLengths(phi_rad, sliders["d"].val)

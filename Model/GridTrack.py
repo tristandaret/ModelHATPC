@@ -177,7 +177,6 @@ def update(val):
     - Recomputes time traces for each cell using `Compute1D` and updates the
       plotted lines and text summaries.
     """
-
     phi = sliders["phi"].val
     if abs(phi) < 1e-6:
         phi = 1e-6 * np.sign(phi or 1)

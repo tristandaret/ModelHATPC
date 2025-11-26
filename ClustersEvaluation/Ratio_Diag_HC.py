@@ -179,9 +179,9 @@ with PdfPages(
     plt.text(
         0.95,
         0.95,
-        "$\mu$ = "
+        r"$\mu$ = "
         f"{np.mean(list_diag):.2f}\n"
-        "$\sigma$ = "
+        r"$\sigma$ = "
         f"{np.std(list_diag):.2f}",
         ha="right",
         va="top",
@@ -192,9 +192,9 @@ with PdfPages(
     plt.text(
         0.95,
         0.75,
-        "$\mu$ = "
+        r"$\mu$ = "
         f"{np.mean(list_diag_cut):.2f}\n"
-        "$\sigma$ = "
+        r"$\sigma$ = "
         f"{np.std(list_diag_cut):.2f}",
         ha="right",
         va="top",
@@ -216,7 +216,7 @@ with PdfPages(
     plt.text(
         0.05,
         0.75,
-        r"$30^\circ \leq \varphi \leq 60^\circ$" "\n L $\geq$ 2 mm",
+        r"$30^\circ \leq \varphi \leq 60^\circ$" "\n L $\\geq$ 2 mm",
         ha="left",
         va="top",
         transform=ax.transAxes,
@@ -287,9 +287,9 @@ with PdfPages(
     plt.text(
         0.95,
         0.95,
-        "$\mu$ = "
+        r"$\mu$ = "
         f"{np.mean(list_cros):.2f}\n"
-        "$\sigma$ = "
+        r"$\sigma$ = "
         f"{np.std(list_cros):.2f}",
         ha="right",
         va="top",
@@ -300,9 +300,9 @@ with PdfPages(
     plt.text(
         0.95,
         0.75,
-        "$\mu$ = "
+        r"$\mu$ = "
         f"{np.mean(list_cros_cut):.2f}\n"
-        "$\sigma$ = "
+        r"$\sigma$ = "
         f"{np.std(list_cros_cut):.2f}",
         ha="right",
         va="top",
@@ -324,7 +324,7 @@ with PdfPages(
     plt.text(
         0.05,
         0.75,
-        r"$30^\circ \leq \varphi \leq 60^\circ$" "\n L $\geq$ 2 mm",
+        r"$30^\circ \leq \varphi \leq 60^\circ$" "\n L $\\geq$ 2 mm",
         ha="left",
         va="top",
         transform=ax.transAxes,
@@ -396,9 +396,9 @@ with PdfPages(
     plt.text(
         0.95,
         0.95,
-        "$\mu$ = "
+        r"$\mu$ = "
         f"{np.mean(list_vert):.6f}\n"
-        "$\sigma$ = "
+        r"$\sigma$ = "
         f"{np.std(list_vert):.6f}",
         ha="right",
         va="top",
@@ -409,9 +409,9 @@ with PdfPages(
     plt.text(
         0.95,
         0.75,
-        "$\mu$ = "
+        r"$\mu$ = "
         f"{np.mean(list_vert_cut):.6f}\n"
-        "$\sigma$ = "
+        r"$\sigma$ = "
         f"{np.std(list_vert_cut):.6f}",
         ha="right",
         va="top",
@@ -433,7 +433,7 @@ with PdfPages(
     plt.text(
         0.05,
         0.75,
-        r"$\varphi \leq 45^\circ$" "\n L $\geq$ 2 mm",
+        r"$\varphi \leq 45^\circ$" "\n L $\\geq$ 2 mm",
         ha="left",
         va="top",
         transform=ax.transAxes,

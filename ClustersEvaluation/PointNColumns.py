@@ -1,5 +1,4 @@
-"""Compare the waveform produced by point-like deposits summed over
-multiple columns with the analytical 1D (linear) deposit.
+"""Compare waveforms from point-like deposits summed over multiple columns.
 
 This script computes the shaped signal for a line deposit (1D reference)
 and compares it to the sum of individual point-like (0D) deposits placed on
@@ -70,7 +69,7 @@ ax1.legend()
 # Difference plot
 ax2.axhline(0, color="black", lw=3, ls="--")
 ax2.set_xlabel("Time (ns)", labelpad=10)
-ax2.set_ylabel("Difference [\%]", labelpad=20)
+ax2.set_ylabel(r"Difference [\%]", labelpad=20)
 ax2.set_ylim(-15, 5)
 ax2.grid()
 

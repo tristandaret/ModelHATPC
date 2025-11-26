@@ -1,5 +1,3 @@
-import numpy as np
-
 """Geometry helpers and grid definitions used by the HATPC model.
 
 This module defines the pad/grid geometry (number of pads, pad sizes and
@@ -28,6 +26,8 @@ Functions
     Compute the length of the track intersecting the pad map in various
     segmentation schemes used for cluster categorization.
 """
+
+import numpy as np
 
 
 ##### GEOMETRY SETTINGS ######

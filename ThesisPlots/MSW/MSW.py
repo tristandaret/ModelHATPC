@@ -22,6 +22,20 @@ B = 2 * np.sqrt(2) * E * Gf  # matter potential in eV²
 
 
 def lambda_m(n_e, sign):
+    """Matter-modified squared-mass eigenvalue.
+
+    Parameters
+    ----------
+    n_e : array_like or float
+        Electron density.
+    sign : {1, -1}
+        Choose +1 for the heavier eigenvalue, -1 for the lighter eigenvalue.
+
+    Returns
+    -------
+    ndarray or float
+        Matter-modified squared-mass eigenvalue m^2_M.
+    """
     Acc = 2 * np.sqrt(2) * E * Gf * n_e * NA
     Deltam2_M = np.sqrt(
         (dm2 * np.cos(2 * theta) - Acc) ** 2 + (dm2 * np.sin(2 * theta)) ** 2
@@ -30,6 +44,19 @@ def lambda_m(n_e, sign):
 
 
 def extrapolate_p(n_e):
+    """Asymptotic extrapolation for large electron density.
+
+    Parameters
+    ----------
+    n_e : array_like or float
+        Electron density.
+
+    Returns
+    -------
+    ndarray or float
+        Extrapolated value for the heavier eigenvalue in the large-density
+        limit.
+    """
     return 0.5 * (m2 + 2 * (B * n_e * NA) - dm2 * np.cos(2 * theta))
 
 

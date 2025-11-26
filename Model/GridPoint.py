@@ -191,7 +191,6 @@ def update(val):
       y-data of the plotted lines and summary text boxes.
     - Forces the figure canvas to redraw.
     """
-
     x0 = sliders["x"].val + xc
     y0 = sliders["y"].val + yc
     drop_point.set_data([x0], [y0])

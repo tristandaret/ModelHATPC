@@ -1,37 +1,21 @@
-# Author: Tristan DARET
-# Creation Date: 2024-05-16
-# Last modification: 2024-11-01 by Tristan DARET
+"""HAT dE/dx LUT maker.
 
-"""
-Usage:
-  python dEdx_XP_LUT_maker.py <transverse_diffusion_coefficient> <RC_value>
+This module computes Look-Up Tables (LUTs) for the Crossed Pads (XP) method
+used to estimate dE/dx for HATPC ERAM modules. The LUTs are generated for a
+grid of transverse diffusion coefficients, readout RC values, track angles,
+impact parameters and drift distances and stored into a ROOT `TFile` with a
+`TTree` for downstream analysis.
 
-Arguments:
-  <transverse_diffusion_coefficient> : The transverse diffusion coefficient (Dt) to be used in the LUT computation.
-  <RC_value>                         : The RC value of the ERAMs to be used in the LUT computation.
+Notes
+-----
+- Run as a script: ``python LUT/HAT_dEdx_LUT_maker.py <Dt> <RC>`` where ``Dt`` is
+    the transverse diffusion coefficient and ``RC`` the electronics RC value.
+- Computation may be time-consuming depending on grid sizes; values are
+    independent and can be parallelized.
 
-Example:
-  python dEdx_XP_LUT_maker.py 310 120
-
-This will compute the Look Up Tables (LUTs) for the given transverse diffusion coefficient and RC value, and save the results in a ROOT file.
-To compute the overall LUTs, the script should be run for Dt = (310, 350) and RC = (112, 158), then hadd the 4 files.
-"""
-
-"""
-This script computes the Look Up Tables for the Crossed Pads (XP) method to get dE/dx with the ERAM modules of HATPCs.
-This script is fully independent from the rest of the code and can be run on its own.
-The LUTs are computed for a given set of parameters (Dt, PT, nphi, nd, nRC, nZ) and saved in a ROOT file within a TTree.
-These parameters correspond to the transverse diffusion coefficient, the peaking time of the electronics, 
-the track angle in a given pad, the impact parameter of the track, the RC value of the ERAMs, and the drift distance.
-
-Computation details are in the backup slides here: https://t2k.org/nd280/physics/nd280-ccnue-em-working-group/meetings/cm_march/PiD_HATPC
-
-With the current step sizes, the LUTs are computed in about 30 minutes in local on a recent PC.
-Each value of the LUT is independent from the others, so the computation can be parallelized on a cluster if someone wishes to do so.
-
-The LUTs were already computed and are supposed to be found in https://nd280.lancs.ac.uk/downloads/nd280files/hatTemplates/
-They are downloaded automatically when sourcing for the first time. 
-If for some reason, the repo disappears and every single user lost their copy of the LUTs, they can be remade with this script.
+Author
+------
+Tristan DARET
 """
 
 import sys  # pass arguments for parallelization
@@ -45,7 +29,7 @@ import time
 # Output file directory (adapt it to your needs)
 out_dir = "LUT/"
 
-# Units: ns mm fC ---------------------------------------------------------------------------------------------------------------
+# ---- Units: ns mm fC ----
 # physics variables
 t = np.linspace(1, 3000, 500)  # ns | start at 1 to avoid sigma = 0
 
@@ -85,11 +69,42 @@ ymax = ywidth  # mm ; right border of leading pad
 diag = np.sqrt(xwidth**2 + ywidth**2)
 
 
-# Functions ---------------------------------------------------------------------------------------------------------------------
-# Charge function
-# For linear track simulation. The charge is deposited uniformly along the track
-# The track is defined as a straight line, which is correct for a local (pad-wide) approximation
+# ---- Functions ----
+"""Low-level helper functions used by the LUT maker.
+
+Functions in this section implement the analytic integrals and electronics
+transfer function used when converting deposited charge into shaped ADC-like
+signals. Each function follows NumPy-style docstrings.
+"""
+
+
 def Charge(t, m, q, i, j, k, l, RC, drift, Dt):  # fC
+    """Compute integrated charge for a linear (track) deposit on a pad.
+
+    This analytic expression integrates the Gaussian-convolved lineic
+    charge density over the rectangular pad defined by the coordinates
+    (i, j, k, l).
+
+    Parameters
+    ----------
+    t : array_like
+        Time axis in ns.
+    m, q : float
+        Line parameters describing the track projection (y = m*x + q).
+    i, j, k, l : float
+        Pad edge coordinates used in the integral.
+    RC : float
+        RC parameter (ns/mm) controlling transverse spread with time.
+    drift : float
+        Drift distance (mm).
+    Dt : float
+        Transverse diffusion coefficient.
+
+    Returns
+    -------
+    ndarray
+        Integrated charge (fC) sampled on `t`.
+    """
     sigma = np.sqrt(2 * t / RC + Dt**2 * drift)  # includes transverse diffusion
 
     coeff1 = np.sqrt(2 * (1 + m**2) / np.pi) * sigma
@@ -127,6 +142,18 @@ def Charge(t, m, q, i, j, k, l, RC, drift, Dt):  # fC
 # Maths can be found here: https://thesis.unipd.it/handle/20.500.12608/21505
 # Estimate normalization value for the transfer function of the electronics
 def Get_max_ETF(t):
+    """Return the maximum of the electronics transfer function (ETF).
+
+    Parameters
+    ----------
+    t : array_like
+        Time axis in ns where the ETF is sampled.
+
+    Returns
+    -------
+    float
+        Maximum ETF value on `t`.
+    """
     ETF = np.heaviside(t, 1) * (
         np.exp(-ws * t) + np.exp(-C * t) * (A * np.sin(B * t) - np.cos(B * t))
     )
@@ -137,6 +164,21 @@ max_ETF = Get_max_ETF(t)
 
 
 def ETF(t):
+    """Return the normalized electronics transfer function.
+
+    The ETF is normalized so its peak matches the ADC-like scale used in this
+    code (factor 4096/120 preserved from the original implementation).
+
+    Parameters
+    ----------
+    t : array_like
+        Time axis in ns.
+
+    Returns
+    -------
+    ndarray
+        ETF sampled on `t` and normalized.
+    """
     ETF = np.heaviside(t, 1) * (
         np.exp(-ws * t) + np.exp(-C * t) * (A * np.sin(B * t) - np.cos(B * t))
     )
@@ -146,6 +188,21 @@ def ETF(t):
 # Need to convolute the transfer function with the charge derivative, but the derivative commutes with the convolution
 # and it's easier to compute the derivative of the transfer function
 def dETFdt(t):
+    """Time derivative of the normalized ETF.
+
+    The derivative is used when convolving the deposited charge with the
+    electronics response to obtain the shaped signal.
+
+    Parameters
+    ----------
+    t : array_like
+        Time axis in ns.
+
+    Returns
+    -------
+    ndarray
+        Time derivative of the normalized ETF sampled on `t`.
+    """
     dETFdt = np.heaviside(t, 1) * (
         -ws * np.exp(-ws * t)
         + np.exp(-C * t) * ((B - A * C) * np.sin(B * t) + (A * B + C) * np.cos(B * t))
@@ -159,6 +216,28 @@ dETFdt_t = dETFdt(t)
 
 # Convolution functions
 def Signal(t, m, q, xmin, xmax, ymin, ymax, RC, drift, Dt):
+    """Convolve deposited charge with ETF' to obtain shaped signal.
+
+    Parameters
+    ----------
+    t : array_like
+        Time axis in ns.
+    m, q : float
+        Line parameters describing the track projection.
+    xmin, xmax, ymin, ymax : float
+        Pad boundaries (mm).
+    RC : float
+        RC parameter (ns/mm).
+    drift : float
+        Drift distance (mm).
+    Dt : float
+        Transverse diffusion coefficient.
+
+    Returns
+    -------
+    ndarray
+        Shaped signal (ADC-like) sampled on `t`.
+    """
     return (
         np.convolve(
             Charge(t, m, q, xmin, xmax, ymin, ymax, RC, drift, Dt),
@@ -172,12 +251,44 @@ def Signal(t, m, q, xmin, xmax, ymin, ymax, RC, drift, Dt):
 # Geometry functions
 # returns x (respectively y) for a given y (respectively x), angle and impact parameter
 def X(phi_rad, d, y):
+    """Return x coordinate where the projected line crosses a given y.
+
+    Parameters
+    ----------
+    phi_rad : float
+        Track angle in radians.
+    d : float
+        Impact parameter (mm).
+    y : float
+        y coordinate to evaluate (mm).
+
+    Returns
+    -------
+    float
+        x coordinate (mm) where the projected line crosses `y`.
+    """
     return (
         y - (d - np.sin(phi_rad) * xc + np.cos(phi_rad) * yc) / np.cos(phi_rad)
     ) / np.tan(phi_rad)
 
 
 def Y(phi_rad, d, x):
+    """Return y coordinate for the projected line at a given x.
+
+    Parameters
+    ----------
+    phi_rad : float
+        Track angle in radians.
+    d : float
+        Impact parameter (mm).
+    x : float
+        x coordinate to evaluate (mm).
+
+    Returns
+    -------
+    float
+        y coordinate (mm) for the projected line at `x`.
+    """
     return np.tan(phi_rad) * x + (
         d - np.sin(phi_rad) * xc + np.cos(phi_rad) * yc
     ) / np.cos(phi_rad)

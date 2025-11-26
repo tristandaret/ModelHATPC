@@ -25,6 +25,15 @@ plt.rcParams.update(
 
 # PLOT AESTHETICS -----------------------------------------------------------------------
 def set_slider_fontsize(slider, fontsize=25):
+    """Set font size for a Matplotlib slider's label and value text.
+
+    Parameters
+    ----------
+    slider : matplotlib.widgets.Slider
+        Slider widget whose label and value text fonts will be adjusted.
+    fontsize : int, optional
+        Font size to apply (default is 25).
+    """
     slider.label.set_fontsize(fontsize)
     slider.valtext.set_fontsize(fontsize)
 
@@ -69,6 +78,20 @@ dm13_0 = dm12_0 + dm23_0
 def pmns_matrix(
     theta_12=theta_12_0, theta_13=theta_13_0, theta_23=theta_23_0, delta_cp=delta_cp_0
 ):
+    """Build the PMNS mixing matrix using standard parametrization.
+
+    Parameters
+    ----------
+    theta_12, theta_13, theta_23 : float
+        Mixing angles in radians.
+    delta_cp : float
+        CP-violating phase in radians.
+
+    Returns
+    -------
+    ndarray
+        Complex 3x3 PMNS matrix.
+    """
     c12, s12 = np.cos(theta_12), np.sin(theta_12)
     c23, s23 = np.cos(theta_23), np.sin(theta_23)
     c13, s13 = np.cos(theta_13), np.sin(theta_13)
@@ -104,6 +127,28 @@ def oscillation_probability(
     dm23=dm23_0,
     sign=1,
 ):
+    """Compute oscillation probability P(nu_alpha -> nu_beta).
+
+    Parameters
+    ----------
+    alpha, beta : str
+        Flavor labels ('e', 'mu', 'tau').
+    E_MeV : float
+        Neutrino energy in MeV.
+    Lmin_km, Lmax_km : float
+        Baseline range in km for which the probability is sampled.
+    theta_12, theta_13, theta_23, delta_cp : float
+        Mixing parameters in radians.
+    dm12, dm23 : float
+        Mass-squared differences in eV^2.
+    sign : int
+        +1 for neutrinos, -1 for antineutrinos (affects CP-odd term sign).
+
+    Returns
+    -------
+    ndarray
+        Oscillation probability sampled on a geometric baseline grid.
+    """
     U = pmns_matrix(theta_12, theta_13, theta_23, delta_cp)
     i = iflavor[alpha]
     j = iflavor[beta]
@@ -206,7 +251,7 @@ sdcpdeg = Slider(
 )
 sdm12e5 = Slider(
     axdm12,
-    r"$\Delta m^2_{12}$" f"\n" r"[$10^{-5}$eV$^2$]",
+    r"$\Delta m^2_{12}$" "\n" r"[$10^{-5}$eV$^2$]",
     5,
     10,
     valinit=dm12_0 * 1e5,
@@ -214,7 +259,7 @@ sdm12e5 = Slider(
 )
 sdm23e3 = Slider(
     axdm23,
-    r"$\Delta m^2_{23}$" f"\n" r"[$10^{-3}$eV$^2$]",
+    r"$\Delta m^2_{23}$" "\n" r"[$10^{-3}$eV$^2$]",
     2,
     3,
     valinit=dm23_0 * 1e3,
@@ -350,6 +395,13 @@ ax_plot.legend(visible_lines, visible_labels)
 
 # RESET SLIDERS -------------------------------------------------------------------------
 def reset(event):
+    """Reset interactive sliders to their default values.
+
+    Parameters
+    ----------
+    event : matplotlib event
+        Event object from the reset button click (ignored).
+    """
     sE.reset()
     sL.reset()
     st13deg.reset()
@@ -366,6 +418,14 @@ reset_button.on_clicked(reset)
 # UPDATE FUNCTION FOR SLIDER ------------------------------------------------------------
 # Update function for sliders
 def update(val):
+    """Update plotted oscillation curves when sliders change.
+
+    Parameters
+    ----------
+    val : float
+        Slider callback value (ignored); current slider positions are
+        read directly from the slider widgets.
+    """
     st12 = np.deg2rad(st12deg.val)
     st13 = np.deg2rad(st13deg.val)
     st23 = np.deg2rad(st23deg.val)
@@ -638,6 +698,14 @@ for slider in sliders:
 # HIDE/SHOW LINES -----------------------------------------------------------------------
 # Define visibility toggle function
 def toggle_visibility(label):
+    """Toggle visibility of a plotted line corresponding to a checkbox label.
+
+    Parameters
+    ----------
+    label : str
+        Label provided by the CheckButtons widget to identify which line to
+        toggle.
+    """
     label_map = {
         r"$\nu_e$": line_Xe,
         r"$\nu_\mu$": line_Xmu,

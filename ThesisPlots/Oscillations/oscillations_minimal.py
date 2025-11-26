@@ -42,6 +42,20 @@ dm13_0 = dm12_0 + dm23_0
 def pmns_matrix(
     theta_12=theta_12_0, theta_13=theta_13_0, theta_23=theta_23_0, delta_cp=delta_cp_0
 ):
+    """Build the PMNS mixing matrix using standard parametrization.
+
+    Parameters
+    ----------
+    theta_12, theta_13, theta_23 : float
+        Mixing angles in radians.
+    delta_cp : float
+        CP-violating phase in radians.
+
+    Returns
+    -------
+    ndarray
+        Complex 3x3 PMNS matrix.
+    """
     c12, s12 = np.cos(theta_12), np.sin(theta_12)
     c23, s23 = np.cos(theta_23), np.sin(theta_23)
     c13, s13 = np.cos(theta_13), np.sin(theta_13)
@@ -75,6 +89,29 @@ def oscillation_probability(
     dm12=dm12_0,
     dm23=dm23_0,
 ):
+    """Compute oscillation probability P(nu_alpha -> nu_beta).
+
+    This function computes the oscillation probability as a function of
+    baseline using standard three-flavour vacuum oscillation formulae.
+
+    Parameters
+    ----------
+    alpha, beta : str
+        Flavor labels ('e', 'mu', 'tau').
+    E_MeV : float
+        Neutrino energy in MeV.
+    L_km : float
+        Baseline in km.
+    theta_12, theta_13, theta_23, delta_cp : float
+        Mixing parameters in radians.
+    dm12, dm23 : float
+        Mass-squared differences in eV^2.
+
+    Returns
+    -------
+    ndarray
+        Oscillation probability sampled on a geometric baseline grid.
+    """
     U = pmns_matrix(theta_12, theta_13, theta_23, delta_cp)
     i = iflavor[alpha]
     j = iflavor[beta]
@@ -160,11 +197,25 @@ ax_plot.grid()
 
 # UPDATE FUNCTION FOR SLIDER ------------------------------------------------------------
 def reset(event):
+    """Reset interactive sliders to their default values.
+
+    Parameters
+    ----------
+    event : matplotlib event
+        Event object passed by Matplotlib widgets (ignored).
+    """
     sE.reset()
 
 
 def update(val):
+    """Update plot lines when a slider changes.
 
+    Parameters
+    ----------
+    val : float
+        Slider value passed by Matplotlib (ignored here); current slider
+        values are read directly.
+    """
     X_e_vals = oscillation_probability(flavors[alpha], "e", sE.val, Lnom[case])
     X_mu_vals = oscillation_probability(flavors[alpha], "mu", sE.val, Lnom[case])
     X_tau_vals = oscillation_probability(flavors[alpha], "tau", sE.val, Lnom[case])
@@ -200,6 +251,13 @@ check = CheckButtons(
 
 # Define visibility toggle function
 def toggle_visibility(label):
+    """Toggle visibility of a plotted line associated with the label.
+
+    Parameters
+    ----------
+    label : str
+        Label string used in the checkbox widget.
+    """
     label_map = {
         r"$P(\nu_e)$": line_Xe,
         r"$P(\nu_\mu)$": line_Xmu,
