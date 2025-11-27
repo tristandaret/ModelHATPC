@@ -1,75 +1,55 @@
-# ModelHATPC
+# ModelHATPC — Track-based charge propagation model for particle detectors
 
-ModelHATPC is a Python project that implements a lineic charge deposit model for
-High Angle Time Projection Chambers (HATPCs), derived from the ND280 detector
-of the T2K experiment. The work extends previous point-like solutions by
-solving the telegrapher's equation for lineic (track-like) deposits and
-provides interactive visualizations to inspect per-cell time responses.
+ModelHATPC is an engineering-grade Python codebase that models lineic (track) charge deposits and their time response in High-Angle Time Projection Chambers (HATPCs), gaseous detectors installed in the near detector of the T2K experiment, studying the physics of neutrinos. The project combines analytical and numerical methods, interactive visualization, and reproducible tooling to demonstrate physics modeling and software engineering best practices.
+**Highlights & Capabilities**
+- **Applied physics & numerical methods:** Telegrapher's-equation–based modelling for distributed line charges; numerical integration and signal processing.
+- **Scientific Python stack:** Practical, production-oriented use of `numpy`, `scipy`, and `matplotlib` for simulation and visualization.
+- **Engineering practices:** Reproducible environments (Docker + Makefile), pre-commit hooks, static checking (`mypy`, `flake8`), and clear project layout.
+- **Visualization & UX:** Interactive scripts that help explore model parameters and inspect per-cell time responses.
 
-Key highlights
-- Physics-focused: telegrapher's-equation based modelling for charge propagation.
-- Interactive visualization: matplotlib-based GUIs to explore parameter space.
-- Educational: demonstrates analytical and numerical techniques for detector modeling.
+**Architecture**
+- **Model:** `Model/GridTrack.py`, `Model/GridPoint.py` — interactive entry points for track and point-like deposit visualizations. Parameters can be adjusted using sliders from `matplotlib.widgets`.
+- **Physics & utilities:** `Headers/ModelUtils.py`, `Headers/GeometryUtils.py`, `Headers/GridUtils.py` — core model functions and helpers.
+- **LUT & analysis:** `LUT/` and `ClustersEvaluation/` — lookup table tools and analysis scripts used during development.
 
-Quick start
------------
-1. Create a Python environment (Python 3.8+ recommended) and install dependencies:
+**Skills demonstrated**
+- **Languages & tooling:** Python 3.8+, zsh-friendly scripts, Docker, Make.
+- **Numerical analysis:** partial and ordinary differential equation modelling, numerical integration, signal processing and stability considerations.
+- **Libraries:** `numpy`, `scipy`, `matplotlib` (interactive GUIs), standard testing and CI tooling.
+- **Software engineering:** Modular code layout, docstrings, typed code, pre-commit, static analysis, and containerized reproducibility.
+- **DevOps & CI:** Multi-stage Dockerfile, Docker Compose, Make targets, and CI workflow examples for container builds and publishing.
+
+Run the interactive `GridTrack` demo (recommended workflow)
+
+1) Create and activate a virtual environment (macOS / zsh):
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt  # if you create one; otherwise install numpy, matplotlib
 ```
 
-2. Run one of the interactive scripts (from the repository root):
+2) Install runtime dependencies:
 
 ```bash
-python Model/GridPoint.py
+pip install -r requirements.txt
+```
+
+3) From the repository root, run the GridTrack demo:
+
+```bash
 python Model/GridTrack.py
 ```
 
-What to read first
-------------------
-- `Headers/ModelUtils.py` — contains the physical model functions (Compute0D,
-  Compute1D) and parameter definitions.
-- `Model/` — top-level interactive scripts that demonstrate the model.
-- `Headers/` — shared plotting and geometry utilities.
+Notes:
+- The script `Model/GridTrack.py` launches an interactive matplotlib-based visualization. Make sure your environment has access to a display (local desktop or X forwarding) for interactive plots.
+- If plots rely on LaTeX rendering (`text.usetex=True`), install a TeX distribution (e.g., TeX Live) or disable LaTeX rendering in script settings.
 
-Repository layout
------------------
-- `Model/` - interactive visualizations (GridPoint, GridTrack)
-- `Headers/` - helper modules and shared plotting defaults
-- `ClustersEvaluation/`, `LUT/`, `ThesisPlots/` - analysis, LUT generation and
-  plotting utilities used during development
+Quick Docker option (reproducible run)
 
-LaTeX requirement for plots
------------------
-Some figures are rendered using `matplotlib` with `text.usetex=True`.
-To reproduce the plots, install a LaTeX distribution (e.g. TeX Live) and ensure `latex`, `dvipng`, and `ghostscript` are in the PATH.
+```bash
+# Build the runtime image
+make build
 
-Code hygiene & docstrings
--------------------------
-This repository follows strict code-hygiene practices to keep the codebase
-readable, consistent and recruiter-friendly:
-
-- **Pre-commit hooks:** A `.pre-commit-config.yaml` is provided and configures
-  formatting and checks (Black, isort, flake8 + bugbear, mypy and common
-  pre-commit hooks) so commits are linted and formatted automatically.
-- **Developer deps:** Development tools are listed in `requirements-dev.txt`
-  and the project `pyproject.toml` includes an optional `dev` extras section
-  to make onboarding and CI straightforward.
-- **Runtime deps:** Runtime dependencies (e.g. `numpy`, `scipy`, `matplotlib`)
-  are declared in `requirements.txt` and `pyproject.toml` metadata.
-- **Docstrings:** Code in `Headers/`, `Model/` and other modules follows a
-  consistent docstring convention (PEP 257 / Google-style) so functions,
-  classes and modules are documented and easy to understand.
-
-How to run the checks locally
------------------------------
-1. Install development tools: `pip install -r requirements-dev.txt`.
-2. Install and activate pre-commit hooks: `pre-commit install`.
-3. Run the linters/formatters manually if desired: `pre-commit run --all-files`.
-
-These measures ensure the repository is well-formatted, statically checked,
-and documented — a signal of good engineering practices for reviewers and
-recruiters.
+# Run a quick smoke test inside the container
+docker run --rm modelhatpc:latest python -c "import sys; print('Python', sys.version)"
+```

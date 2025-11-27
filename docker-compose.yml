@@ -1,0 +1,8 @@
+services:
+  modelhatpc:
+    build: .
+    container_name: modelhatpc
+    tty: true
+    volumes:
+      - .:/app
+    command: ["python", "-c", "import sys; print('ModelHATPC container running, python', sys.version)"]
