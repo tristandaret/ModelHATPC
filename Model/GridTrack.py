@@ -27,6 +27,7 @@ from sys import path
 path.append("Headers/")
 import GeometryUtils as geo
 import GridUtils as gutils
+import matplotlib.pyplot as plt
 import ModelUtils as mutils
 from matplotlib.widgets import Slider
 
@@ -78,7 +79,7 @@ slider_defs = {
 
 sliders = {}
 for key, cfg in slider_defs.items():
-    ax = gutils.plt.axes(cfg["ax"])
+    ax = plt.axes(cfg["ax"])
     sliders[key] = Slider(
         ax=ax,
         label=cfg["label"],
@@ -228,4 +229,4 @@ for s in sliders.values():
     s.on_changed(update)
 
 # ========================= Show Plot =========================
-gutils.plt.show()
+plt.show()
